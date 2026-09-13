@@ -1,0 +1,332 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Tenants — não carrega tenant_id (é a raiz do isolamento) e não tem RLS.
+// ---------------------------------------------------------------------------
+
+enum TenantStatus {
+  ativo
+  suspenso
+  cancelado
+
+  @@map("tenant_status")
+}
+
+model Tenant {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nomeFantasia  String       @map("nome_fantasia")
+  razaoSocial   String?      @map("razao_social")
+  documento     String
+  emailContato  String       @map("email_contato")
+  telefone      String?
+  plano         String       @default("free")
+  status        TenantStatus @default(ativo)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  settings  TenantSettings?
+  users     User[]
+  clientes  Cliente[]
+  viagens   Viagem[]
+  auditLogs AuditLog[]
+
+  @@map("tenants")
+}
+
+// ---------------------------------------------------------------------------
+// Tabelas de negócio — todas carregam tenant_id e têm RLS (ver migração
+// 0002_multi_tenant_rls.sql).
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  admin
+  operador
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  ativo
+  inativo
+  convidado
+
+  @@map("user_status")
+}
+
+model User {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String     @map("tenant_id") @db.Uuid
+  nome          String
+  email         String     @unique
+  senhaHash     String     @map("senha_hash")
+  papel         UserRole   @default(operador)
+  status        UserStatus @default(ativo)
+  ultimoLoginAt DateTime?  @map("ultimo_login_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+model TenantSettings {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId                String   @unique @map("tenant_id") @db.Uuid
+  logoUrl                 String?  @map("logo_url")
+  corPrimaria             String?  @map("cor_primaria")
+  formasPagamento         Json     @map("formas_pagamento")
+  categoriasDespesa       Json     @map("categorias_despesa")
+  textoTermoInscricao     String?  @map("texto_termo_inscricao")
+  prazoRetencaoDadosMeses Int      @default(60) @map("prazo_retencao_dados_meses")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("tenant_settings")
+}
+
+model Cliente {
+  id                         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId                   String    @map("tenant_id") @db.Uuid
+  nome                       String
+  cpf                        String? // ciphertext (AES-256-GCM) — nunca texto plano
+  cpfHash                    String?   @map("cpf_hash") @db.VarChar(64) // HMAC-SHA256 determinístico p/ busca exata
+  telefone                   String
+  email                      String?
+  cidade                     String?
+  uf                         String?   @db.VarChar(2)
+  dataNascimento             DateTime? @map("data_nascimento") @db.Date
+  contatoEmergenciaNome      String?   @map("contato_emergencia_nome")
+  contatoEmergenciaTelefone  String?   @map("contato_emergencia_telefone")
+  observacoes                String?
+  consentimentoMarketing     Boolean   @default(false) @map("consentimento_marketing")
+  consentimentoEm            DateTime? @map("consentimento_em")
+  anonimizadoEm              DateTime? @map("anonimizado_em")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id])
+  inscricoes Inscricao[]
+
+  @@index([tenantId])
+  @@index([tenantId, cpfHash])
+  @@map("clientes")
+}
+
+enum ViagemStatus {
+  planejamento
+  inscricoes
+  confirmada
+  concluida
+  cancelada
+
+  @@map("viagem_status")
+}
+
+model Viagem {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String       @map("tenant_id") @db.Uuid
+  nome               String
+  destinoCidade      String       @map("destino_cidade")
+  destinoUf          String       @map("destino_uf") @db.VarChar(2)
+  dataInicio         DateTime     @map("data_inicio") @db.Date
+  dataFim            DateTime     @map("data_fim") @db.Date
+  capacidade         Int
+  precoTitular       Decimal      @map("preco_titular") @db.Decimal(10, 2)
+  precoAcompanhante  Decimal?     @map("preco_acompanhante") @db.Decimal(10, 2)
+  status             ViagemStatus @default(planejamento)
+  descricao          String?
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  tenant     Tenant           @relation(fields: [tenantId], references: [id])
+  hoteis     ViagemHotel[]
+  atracoes   ViagemAtracao[]
+  inclusos   ViagemIncluso[]
+  inscricoes Inscricao[]
+  despesas   Despesa[]
+
+  @@index([tenantId])
+  @@map("viagens")
+}
+
+model ViagemHotel {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  viagemId       String   @map("viagem_id") @db.Uuid
+  nome           String
+  cidade         String?
+  telefone       String?
+  checkIn        DateTime? @map("check_in") @db.Date
+  checkOut       DateTime? @map("check_out") @db.Date
+  valorNegociado Decimal?  @map("valor_negociado") @db.Decimal(10, 2)
+  observacoes    String?
+
+  viagem Viagem @relation(fields: [viagemId], references: [id])
+
+  @@index([tenantId])
+  @@index([viagemId])
+  @@map("viagem_hoteis")
+}
+
+enum AtracaoTipo {
+  parque
+  passeio
+  refeicao
+  outro
+
+  @@map("atracao_tipo")
+}
+
+model ViagemAtracao {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String      @map("tenant_id") @db.Uuid
+  viagemId      String      @map("viagem_id") @db.Uuid
+  nome          String
+  tipo          AtracaoTipo
+  valorEntrada  Decimal?    @map("valor_entrada") @db.Decimal(10, 2)
+  incluso       Boolean     @default(false)
+  observacoes   String?
+
+  viagem Viagem @relation(fields: [viagemId], references: [id])
+
+  @@index([tenantId])
+  @@index([viagemId])
+  @@map("viagem_atracoes")
+}
+
+model ViagemIncluso {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String @map("tenant_id") @db.Uuid
+  viagemId  String @map("viagem_id") @db.Uuid
+  descricao String
+  ordem     Int    @default(0)
+
+  viagem Viagem @relation(fields: [viagemId], references: [id])
+
+  @@index([tenantId])
+  @@index([viagemId])
+  @@map("viagem_inclusos")
+}
+
+enum InscricaoStatus {
+  confirmada
+  cancelada
+  lista_espera
+
+  @@map("inscricao_status")
+}
+
+model Inscricao {
+  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String          @map("tenant_id") @db.Uuid
+  viagemId           String          @map("viagem_id") @db.Uuid
+  clienteId          String          @map("cliente_id") @db.Uuid
+  levaAcompanhante   Boolean         @default(false) @map("leva_acompanhante")
+  nomeAcompanhante   String?         @map("nome_acompanhante")
+  docAcompanhante    String?         @map("doc_acompanhante")
+  seguroViagem       Boolean         @default(false) @map("seguro_viagem")
+  seguradora         String?
+  numeroApolice      String?         @map("numero_apolice")
+  valorTotal         Decimal         @map("valor_total") @db.Decimal(10, 2)
+  status             InscricaoStatus @default(confirmada)
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  viagem     Viagem      @relation(fields: [viagemId], references: [id])
+  cliente    Cliente     @relation(fields: [clienteId], references: [id])
+  pagamentos Pagamento[]
+
+  @@unique([viagemId, clienteId])
+  @@index([tenantId])
+  @@map("inscricoes")
+}
+
+enum PagamentoForma {
+  pix
+  cartao
+  dinheiro
+  transferencia
+
+  @@map("pagamento_forma")
+}
+
+model Pagamento {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String         @map("tenant_id") @db.Uuid
+  inscricaoId     String         @map("inscricao_id") @db.Uuid
+  valor           Decimal        @db.Decimal(10, 2)
+  forma           PagamentoForma
+  parcelas        Int?
+  dataPagamento   DateTime       @map("data_pagamento") @db.Date
+  comprovanteUrl  String?        @map("comprovante_url")
+  observacoes     String?
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  inscricao Inscricao @relation(fields: [inscricaoId], references: [id])
+
+  @@index([tenantId])
+  @@index([inscricaoId])
+  @@map("pagamentos")
+}
+
+model Despesa {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  viagemId       String   @map("viagem_id") @db.Uuid
+  categoria      String
+  descricao      String
+  valor          Decimal  @db.Decimal(10, 2)
+  dataDespesa    DateTime @map("data_despesa") @db.Date
+  comprovanteUrl String?  @map("comprovante_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  viagem Viagem @relation(fields: [viagemId], references: [id])
+
+  @@index([tenantId])
+  @@index([viagemId])
+  @@map("despesas")
+}
+
+enum AuditAcao {
+  create
+  update
+  delete
+  login
+  export
+  anonimizacao
+
+  @@map("audit_acao")
+}
+
+// Sem RLS de escrita pela aplicação comum: apenas INSERT é permitido para
+// app_user (ver migração 0002); UPDATE e DELETE são revogados no banco.
+model AuditLog {
+  id           BigInt    @id @default(autoincrement())
+  tenantId     String    @map("tenant_id") @db.Uuid
+  userId       String?   @map("user_id") @db.Uuid
+  acao         AuditAcao
+  entidade     String
+  entidadeId   String?   @map("entidade_id")
+  dadosAntes   Json?     @map("dados_antes")
+  dadosDepois  Json?     @map("dados_depois")
+  ip           String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("audit_logs")
+}
