@@ -23,7 +23,13 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry && !refreshing) {
+    // Rotas de /auth/* são públicas: um 401 ali significa "credenciais
+    // inválidas" ou "sessão inexistente", não "access token expirado em
+    // recurso protegido". Tentar refresh+retry nelas (e redirecionar a
+    // força em caso de falha) atropelaria a própria tela de login/signup
+    // com um reload completo em vez de deixá-la mostrar o erro inline.
+    const isAuthEndpoint = typeof original?.url === 'string' && original.url.startsWith('/auth/');
+    if (error.response?.status === 401 && !isAuthEndpoint && !original._retry && !refreshing) {
       original._retry = true;
       refreshing = true;
       try {
