@@ -1,7 +1,11 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { ConfiguracoesLayout } from './components/ConfiguracoesLayout';
 import { PrivateLayout } from './components/PrivateLayout';
 import { useAuth } from './context/AuthContext';
 import { AtivarConta } from './pages/AtivarConta';
+import { Empresa } from './pages/configuracoes/Empresa';
+import { Preferencias } from './pages/configuracoes/Preferencias';
+import { Privacidade } from './pages/configuracoes/Privacidade';
 import { EsqueciSenha } from './pages/EsqueciSenha';
 import { Login } from './pages/Login';
 import { RedefinirSenha } from './pages/RedefinirSenha';
@@ -45,13 +49,19 @@ export default function App() {
       >
         <Route path="viagens" element={<Viagens />} />
         <Route
-          path="configuracoes/usuarios"
+          path="configuracoes"
           element={
             <AdminRoute>
-              <Usuarios />
+              <ConfiguracoesLayout />
             </AdminRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="empresa" replace />} />
+          <Route path="empresa" element={<Empresa />} />
+          <Route path="preferencias" element={<Preferencias />} />
+          <Route path="usuarios" element={<Usuarios />} />
+          <Route path="privacidade" element={<Privacidade />} />
+        </Route>
         <Route path="*" element={<Navigate to="viagens" replace />} />
       </Route>
     </Routes>

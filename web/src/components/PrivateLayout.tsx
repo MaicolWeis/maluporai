@@ -33,12 +33,12 @@ export function PrivateLayout() {
           </NavLink>
           {user?.papel === 'admin' && (
             <NavLink
-              to="/configuracoes/usuarios"
+              to="/configuracoes"
               className={({ isActive }) =>
                 `block px-3 py-2 rounded-md ${isActive ? 'bg-amber-400 text-zinc-900' : 'text-stone-300 hover:text-white'}`
               }
             >
-              Usuários
+              Configurações
             </NavLink>
           )}
         </nav>
