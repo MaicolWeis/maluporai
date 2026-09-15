@@ -92,8 +92,7 @@ export function Usuarios() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black">Usuários</h1>
+      <div className="flex items-center justify-end mb-6">
         <Button onClick={abrirModal}>Convidar usuário</Button>
       </div>
 
