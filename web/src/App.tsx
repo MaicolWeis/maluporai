@@ -3,6 +3,7 @@ import { ConfiguracoesLayout } from './components/ConfiguracoesLayout';
 import { PrivateLayout } from './components/PrivateLayout';
 import { useAuth } from './context/AuthContext';
 import { AtivarConta } from './pages/AtivarConta';
+import { Clientes } from './pages/Clientes';
 import { Empresa } from './pages/configuracoes/Empresa';
 import { Preferencias } from './pages/configuracoes/Preferencias';
 import { Privacidade } from './pages/configuracoes/Privacidade';
@@ -48,6 +49,7 @@ export default function App() {
         }
       >
         <Route path="viagens" element={<Viagens />} />
+        <Route path="clientes" element={<Clientes />} />
         <Route
           path="configuracoes"
           element={
