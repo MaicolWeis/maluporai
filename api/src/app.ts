@@ -10,6 +10,7 @@ import { authRouter } from './routes/auth.routes.js';
 import { configuracoesRouter } from './routes/configuracoes.routes.js';
 import { healthRouter } from './routes/health.js';
 import { usuariosRouter } from './routes/usuarios.routes.js';
+import { viagensRouter } from './routes/viagens.routes.js';
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp() {
   app.use('/auth', authRouter);
   app.use('/usuarios', usuariosRouter);
   app.use('/configuracoes', configuracoesRouter);
+  app.use('/viagens', viagensRouter);
 
   app.use(errorHandler);
   return app;
