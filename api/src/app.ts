@@ -8,6 +8,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
 import { authRouter } from './routes/auth.routes.js';
 import { healthRouter } from './routes/health.js';
+import { usuariosRouter } from './routes/usuarios.routes.js';
 
 export function createApp() {
   const app = express();
@@ -27,6 +28,7 @@ export function createApp() {
 
   app.use(healthRouter);
   app.use('/auth', authRouter);
+  app.use('/usuarios', usuariosRouter);
 
   app.use(errorHandler);
   return app;

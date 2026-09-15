@@ -4,6 +4,7 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { loginRateLimit } from '../middlewares/loginRateLimit.js';
 import { validate } from '../middlewares/validate.js';
 import {
+  ativarContaSchema,
   esqueciSenhaSchema,
   loginSchema,
   redefinirSenhaSchema,
@@ -18,3 +19,4 @@ authRouter.post('/refresh', asyncHandler(authController.refresh));
 authRouter.post('/logout', asyncHandler(authController.logout));
 authRouter.post('/esqueci-senha', validate(esqueciSenhaSchema), asyncHandler(authController.esqueciSenha));
 authRouter.post('/redefinir-senha', validate(redefinirSenhaSchema), asyncHandler(authController.redefinirSenha));
+authRouter.post('/ativar-conta', validate(ativarContaSchema), asyncHandler(authController.ativarConta));

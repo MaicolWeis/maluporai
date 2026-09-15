@@ -65,16 +65,19 @@ model User {
   tenantId      String     @map("tenant_id") @db.Uuid
   nome          String
   email         String     @unique
-  senhaHash     String     @map("senha_hash")
+  // Nulo enquanto o usuário está 'convidado' (ainda não definiu senha em
+  // /auth/ativar-conta). Nunca nulo para 'ativo'/'inativo'.
+  senhaHash     String?    @map("senha_hash")
   papel         UserRole   @default(operador)
   status        UserStatus @default(ativo)
   ultimoLoginAt DateTime?  @map("ultimo_login_at")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
-  tenant       Tenant              @relation(fields: [tenantId], references: [id])
+  tenant              Tenant               @relation(fields: [tenantId], references: [id])
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  activationTokens    ActivationToken[]
 
   @@index([tenantId])
   @@map("users")
@@ -99,7 +102,10 @@ model RefreshToken {
   createdByIp String?   @map("created_by_ip")
   createdAt   DateTime  @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  // Cascade: DELETE /usuarios/:id só apaga de fato quem nunca logou, mas
+  // ainda assim pode ter linhas aqui (ex.: sessão automática do signup) —
+  // sem cascade, a FK impediria o delete do usuário.
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([familyId])
@@ -115,10 +121,30 @@ model PasswordResetToken {
   usedAt    DateTime? @map("used_at")
   createdAt DateTime  @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@map("password_reset_tokens")
+}
+
+// Ativação de convite (P3): token de 72h enviado por e-mail em
+// POST /usuarios/convites; consumido em POST /auth/ativar-conta, que roda
+// antes de existir tenant no contexto — mesmo padrão de bootstrap via
+// SECURITY DEFINER do refresh/reset (ver migração
+// 0006_activation_rls_and_lookup_function).
+model ActivationToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("activation_tokens")
 }
 
 model TenantSettings {
