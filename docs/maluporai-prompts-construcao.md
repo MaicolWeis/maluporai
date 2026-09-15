@@ -1,39 +1,27 @@
-# maluporai — SaaS de Gestão de Viagens em Grupo
-
+maluporai — SaaS de Gestão de Viagens em Grupo
 Documento de construção orientado a prompts. Cada feature vira um prompt autocontido, na ordem de execução. Projeto: maluporai.
-
----
-
-## 1. Visão geral
-
+1. Visão geral
 SaaS multi-tenant para guias e empresas de turismo que organizam viagens em grupo (excursões, motoclubes, agências pequenas). Cada tenant gerencia suas próprias viagens, clientes, inscrições e despesas, com isolamento total de dados entre tenants.
-
-**Stack definida:**
-
-| Camada | Tecnologia |
-|---|---|
-| Frontend | React 18 + Vite + TypeScript + Tailwind |
-| Backend | Node.js 20 + Express + TypeScript + Prisma |
-| Banco | PostgreSQL 16 (single database, shared schema, RLS) |
-| Auth | JWT (access 15min + refresh 7d httpOnly cookie), senha com argon2id |
-| Deploy sugerido | Vercel (front) + Railway (API + Postgres) |
-
+Stack definida:
+Camada
+Tecnologia
+Frontend
+React 18 + Vite + TypeScript + Tailwind
+Backend
+Node.js 20 + Express + TypeScript + Prisma
+Banco
+PostgreSQL 16 (single database, shared schema, RLS)
+Auth
+JWT (access 15min + refresh 7d httpOnly cookie), senha com argon2id
+Deploy sugerido
+Vercel (front) + Railway (API + Postgres)
 Justificativa do Node sobre Java: time de uma pessoa, reaproveitamento do padrão já validado no PulseOps (Express/Prisma/Postgres), velocidade de iteração. Se no futuro houver requisito corporativo (cliente enterprise exigindo Java/Spring), a separação clara entre API REST e front permite reescrever o backend sem tocar no front.
-
-**Estratégia multi-tenant: single database + shared schema + Row Level Security**
-
-Todas as tabelas de negócio carregam `tenant_id`. O isolamento acontece em duas camadas (defesa em profundidade):
-
-1. **Postgres RLS** — política `tenant_isolation` em cada tabela, filtrando por `current_setting('app.tenant_id')`. Mesmo que a aplicação tenha um bug, o banco não devolve dados de outro tenant.
-2. **Middleware Prisma** — toda query recebe `tenant_id` injetado automaticamente a partir do JWT. Nenhum endpoint aceita `tenant_id` vindo do client.
-
+Estratégia multi-tenant: single database + shared schema + Row Level Security
+Todas as tabelas de negócio carregam tenant_id. O isolamento acontece em duas camadas (defesa em profundidade):
+Postgres RLS — política tenant_isolation em cada tabela, filtrando por current_setting('app.tenant_id'). Mesmo que a aplicação tenha um bug, o banco não devolve dados de outro tenant.
+Middleware Prisma — toda query recebe tenant_id injetado automaticamente a partir do JWT. Nenhum endpoint aceita tenant_id vindo do client.
 Alternativa descartada por ora: schema-per-tenant. Aumenta complexidade de migração e operação sem ganho real no volume esperado (dezenas a centenas de tenants pequenos). Revisar se surgir tenant com exigência de isolamento físico.
-
----
-
-## 2. Modelo de dados
-
-```
+2. Modelo de dados
 tenants
   id (uuid pk), nome_fantasia, razao_social, documento (cnpj/cpf),
   email_contato, telefone, plano, status (ativo|suspenso|cancelado),
@@ -95,50 +83,35 @@ audit_logs
   id (bigserial pk), tenant_id, user_id, acao (create|update|delete|
   login|export|anonimizacao), entidade, entidade_id, dados_antes (jsonb),
   dados_depois (jsonb), ip, created_at
-```
-
+​
 Observações de modelagem:
-
-- Pagamentos viram tabela própria (não campos na inscrição) porque o caso real é parcelado: sinal no Pix + restante no cartão. Status de pagamento da inscrição é **derivado**: `sum(pagamentos) vs valor_total` → pago / parcial / pendente.
-- "Garupa" vira `acompanhante` no modelo (genérico para qualquer nicho de turismo), mas a UI do tenant pode renomear via settings se quisermos no futuro.
-- CPF criptografado em repouso (pgcrypto ou criptografia na aplicação com chave em env). É o dado mais sensível do sistema.
-- `audit_logs` sem RLS de escrita pela aplicação comum — apenas insert via trigger/serviço, nunca update/delete.
-
----
-
-## 3. Segurança e LGPD — requisitos transversais
-
+Pagamentos viram tabela própria (não campos na inscrição) porque o caso real é parcelado: sinal no Pix + restante no cartão. Status de pagamento da inscrição é derivado: sum(pagamentos) vs valor_total → pago / parcial / pendente.
+"Garupa" vira acompanhante no modelo (genérico para qualquer nicho de turismo), mas a UI do tenant pode renomear via settings se quisermos no futuro.
+CPF criptografado em repouso (pgcrypto ou criptografia na aplicação com chave em env). É o dado mais sensível do sistema.
+audit_logs sem RLS de escrita pela aplicação comum — apenas insert via trigger/serviço, nunca update/delete.
+3. Segurança e LGPD — requisitos transversais
 Estes requisitos valem para todos os prompts e devem ser repetidos no contexto de cada um:
-
-**Isolamento**
-- RLS ativo em todas as tabelas com `tenant_id`; conexão da aplicação usa role sem `BYPASSRLS`.
-- `tenant_id` sempre extraído do JWT no middleware, nunca do body/query.
-- Testes automatizados de isolamento: usuário do tenant A tentando acessar recurso do tenant B recebe 404 (não 403, para não vazar existência).
-
-**Autenticação e sessão**
-- Senha: argon2id, mínimo 8 caracteres, verificação contra senhas vazadas comuns.
-- Rate limit: 5 tentativas de login por e-mail/15min, com resposta genérica ("credenciais inválidas") para não revelar se o e-mail existe.
-- Access token JWT 15min em memória; refresh token 7d em cookie httpOnly, Secure, SameSite=Strict, com rotação a cada uso e revogação no logout.
-- Reset de senha por token de uso único com expiração de 30min.
-
-**LGPD**
-- Base legal: execução de contrato (dados de cliente/inscrição) e consentimento (marketing). Registrar consentimento com timestamp.
-- Minimização: coletar apenas o necessário. CPF é opcional no cadastro do cliente, obrigatório só quando o seguro exigir.
-- Direitos do titular: endpoint de exportação dos dados de um cliente (JSON/PDF) e anonimização (substitui nome/cpf/telefone/email por hash, preserva valores financeiros para contabilidade do tenant). Exclusão física só após prazo de retenção configurável.
-- O tenant é o controlador dos dados dos clientes dele; a plataforma é operadora. Refletir isso nos Termos de Uso e na Política de Privacidade.
-- Trilha de auditoria de todo acesso de escrita e das ações de exportação/anonimização.
-- TLS obrigatório, headers de segurança (helmet), CORS restrito ao domínio do front.
-
-**Geral**
-- Validação de entrada com Zod em todas as rotas.
-- Nenhum dado sensível em logs de aplicação.
-- IDs públicos sempre UUID (nunca sequencial).
-
----
-
-## 4. Ordem de execução e prompts
-
-```
+Isolamento
+RLS ativo em todas as tabelas com tenant_id; conexão da aplicação usa role sem BYPASSRLS.
+tenant_id sempre extraído do JWT no middleware, nunca do body/query.
+Testes automatizados de isolamento: usuário do tenant A tentando acessar recurso do tenant B recebe 404 (não 403, para não vazar existência).
+Autenticação e sessão
+Senha: argon2id, mínimo 8 caracteres, verificação contra senhas vazadas comuns.
+Rate limit: 5 tentativas de login por e-mail/15min, com resposta genérica ("credenciais inválidas") para não revelar se o e-mail existe.
+Access token JWT 15min em memória; refresh token 7d em cookie httpOnly, Secure, SameSite=Strict, com rotação a cada uso e revogação no logout.
+Reset de senha por token de uso único com expiração de 30min.
+LGPD
+Base legal: execução de contrato (dados de cliente/inscrição) e consentimento (marketing). Registrar consentimento com timestamp.
+Minimização: coletar apenas o necessário. CPF é opcional no cadastro do cliente, obrigatório só quando o seguro exigir.
+Direitos do titular: endpoint de exportação dos dados de um cliente (JSON/PDF) e anonimização (substitui nome/cpf/telefone/email por hash, preserva valores financeiros para contabilidade do tenant). Exclusão física só após prazo de retenção configurável.
+O tenant é o controlador dos dados dos clientes dele; a plataforma é operadora. Refletir isso nos Termos de Uso e na Política de Privacidade.
+Trilha de auditoria de todo acesso de escrita e das ações de exportação/anonimização.
+TLS obrigatório, headers de segurança (helmet), CORS restrito ao domínio do front.
+Geral
+Validação de entrada com Zod em todas as rotas.
+Nenhum dado sensível em logs de aplicação.
+IDs públicos sempre UUID (nunca sequencial).
+4. Ordem de execução e prompts
 P0  Fundação do projeto (repos, tooling, CI básico)
 P1  Banco de dados, Prisma, multi-tenancy e RLS
 P2  Autenticação e registro de tenant (signup, login, refresh, reset)
@@ -153,15 +126,12 @@ P9  Despesas
 P10 Dashboard financeiro e visão geral
 P11 Auditoria, hardening e checklist LGPD
 P12 Deploy e observabilidade
-```
-
+​
 A regra de dependência: P1 e P2 destravam tudo; P5 e P6 podem andar em paralelo depois de P4; P7 depende de P5+P6; P8 depende de P7.
+Fluxo de trabalho por fase: cada fase roda numa branch própria criada a partir da main (nome indicado na primeira linha de cada prompt), vira um Pull Request, aguarda o CI verde (suíte completa com Postgres, incluindo testes de isolamento RLS) e passa por revisão antes do merge. Só iniciar a fase seguinte com a anterior mergeada — exceto P5 e P6, que podem correr em paralelo em branches separadas.
+P0 — Fundação do projeto
+Crie a branch p0-fundacao a partir da main e trabalhe nela.
 
----
-
-### P0 — Fundação do projeto
-
-```
 Crie a estrutura inicial de um SaaS chamado maluporai, com dois projetos:
 
 /api — Node.js 20 + Express + TypeScript + Prisma (PostgreSQL)
@@ -195,13 +165,10 @@ Requisitos do /web:
 
 Não implemente nenhuma feature de negócio ainda. Entregue o esqueleto
 rodando com a tela de login estática e o healthcheck respondendo.
-```
+​
+P1 — Banco, Prisma, multi-tenancy e RLS
+Crie a branch p1-banco-rls a partir da main e trabalhe nela.
 
----
-
-### P1 — Banco, Prisma, multi-tenancy e RLS
-
-```
 No projeto /api (Express + TypeScript + Prisma + PostgreSQL), implemente
 a fundação multi-tenant.
 
@@ -242,13 +209,10 @@ a fundação multi-tenant.
 
 Entregue também um seed de desenvolvimento com 2 tenants e dados
 mínimos para validar o isolamento manualmente.
-```
+​
+P2 — Autenticação e registro de tenant
+Crie a branch p2-auth a partir da main e trabalhe nela.
 
----
-
-### P2 — Autenticação e registro de tenant
-
-```
 Implemente o fluxo de autenticação do maluporai (API + telas React).
 
 Backend:
@@ -288,13 +252,10 @@ Critérios de aceite:
 - Tokens nunca em localStorage
 - Signup cria tenant isolado verificável pelos testes de RLS do P1
 - Todas as rotas de auth com validação Zod e respostas padronizadas
-```
+​
+P3 — Gestão de usuários do tenant
+Crie a branch p3-usuarios a partir da main e trabalhe nela.
 
----
-
-### P3 — Gestão de usuários do tenant
-
-```
 Implemente a gestão de usuários internos do tenant (apenas papel admin).
 
 Backend:
@@ -325,13 +286,10 @@ Frontend:
 - /ativar-conta/:token — definição de senha do convidado
 - Menu lateral esconde itens sem permissão; API continua validando
   no servidor (defesa em profundidade)
-```
+​
+P4 — Configurações do tenant
+Crie a branch p4-configuracoes a partir da main e trabalhe nela.
 
----
-
-### P4 — Configurações do tenant
-
-```
 Implemente a tela e API de configurações do tenant (papel admin).
 
 Backend:
@@ -354,13 +312,10 @@ Frontend:
   simples do que acontece (anonimização automática de clientes sem
   inscrição ativa após o prazo), e link para a Política de Privacidade
   da plataforma
-```
+​
+P5 — CRUD de Clientes + LGPD
+Crie a branch p5-clientes a partir da main e trabalhe nela.
 
----
-
-### P5 — CRUD de Clientes + LGPD
-
-```
 Implemente o cadastro de clientes do tenant.
 
 Backend:
@@ -393,13 +348,10 @@ Frontend:
     (modal de confirmação destrutiva com digitação do nome do cliente)
 - Formulário de novo cliente em Modal, com checkbox de consentimento
   de marketing desmarcado por padrão e texto claro do que significa
-```
+​
+P6 — CRUD de Viagens
+Crie a branch p6-viagens a partir da main e trabalhe nela.
 
----
-
-### P6 — CRUD de Viagens
-
-```
 Implemente o cadastro de viagens com seus agregados.
 
 Backend:
@@ -429,13 +381,10 @@ Frontend (reaproveitar o protótipo aprovado):
 - Modal "Nova viagem" e edição inline no drawer
 - Mudança de status com select no header do drawer respeitando as
   transições válidas
-```
+​
+P7 — Inscrições
+Crie a branch p7-inscricoes a partir da main e trabalhe nela.
 
----
-
-### P7 — Inscrições
-
-```
 Implemente o vínculo cliente ↔ viagem (inscrições).
 
 Backend:
@@ -465,13 +414,10 @@ Frontend (aba Clientes do drawer da viagem):
   valor calculado automaticamente e editável
 - Indicador de vagas restantes no topo da aba; ao atingir a capacidade,
   oferecer lista de espera
-```
+​
+P8 — Pagamentos
+Crie a branch p8-pagamentos a partir da main e trabalhe nela.
 
----
-
-### P8 — Pagamentos
-
-```
 Implemente o registro de pagamentos por inscrição.
 
 Backend:
@@ -491,13 +437,10 @@ Frontend:
   pagamento" abrindo mini-form inline (valor com atalho "quitar saldo",
   forma, data, parcelas se cartão)
 - Barra de progresso de pagamento no card do inscrito (pago/total)
-```
+​
+P8.5 — Uploads (Supabase Storage)
+Crie a branch p8-5-uploads a partir da main e trabalhe nela.
 
----
-
-### P8.5 — Uploads (Supabase Storage)
-
-```
 Implemente upload de arquivos usando Supabase Storage (apenas o
 Storage — o banco continua sendo o Postgres próprio da aplicação).
 
@@ -527,10 +470,10 @@ Frontend:
 Critério de aceite de segurança:
 - Usuário do tenant A não consegue obter URL assinada de arquivo
   do tenant B (teste automatizado)
-```
+​
+P9 — Despesas
+Crie a branch p9-despesas a partir da main e trabalhe nela.
 
-
-```
 Implemente o lançamento de despesas por viagem.
 
 Backend:
@@ -545,13 +488,10 @@ Frontend (aba Despesas do drawer):
   valor) — replicar o padrão do protótipo aprovado
 - Rodapé fixo escuro com total de despesas
 - Mini-resumo por categoria (Hotel R$ X · Ingressos R$ Y ...)
-```
+​
+P10 — Dashboard financeiro e visão geral
+Crie a branch p10-dashboard a partir da main e trabalhe nela.
 
----
-
-### P10 — Dashboard financeiro e visão geral
-
-```
 Implemente a consolidação financeira.
 
 Backend:
@@ -571,13 +511,10 @@ Frontend:
 - /dashboard como home autenticada: cards das próximas viagens,
   lista de pendências de pagamento com atalho para a inscrição,
   gráfico simples (recharts) de resultado por viagem
-```
+​
+P11 — Auditoria, hardening e checklist LGPD
+Crie a branch p11-auditoria-lgpd a partir da main e trabalhe nela.
 
----
-
-### P11 — Auditoria, hardening e checklist LGPD
-
-```
 Feche o ciclo de segurança antes do deploy.
 
 1. Auditoria:
@@ -602,13 +539,10 @@ Feche o ciclo de segurança antes do deploy.
 - Termo de uso no signup com aceite registrado (versão + timestamp)
 - Documento interno: Registro de Operações de Tratamento (tabela:
   dado, finalidade, base legal, retenção) — gerar em markdown no repo
-```
+​
+P12 — Deploy e observabilidade
+Crie a branch p12-deploy a partir da main e trabalhe nela.
 
----
-
-### P12 — Deploy e observabilidade
-
-```
 Prepare o deploy de produção.
 
 - /web na Vercel (build Vite, env VITE_API_URL)
@@ -626,22 +560,12 @@ Prepare o deploy de produção.
 - Checklist final de smoke test em produção: signup de tenant de teste,
   fluxo viagem → cliente → inscrição → pagamento → despesa → financeiro,
   isolamento entre dois tenants reais, reset de senha por e-mail
-```
-
----
-
-## 5. Decisões tomadas e evoluções planejadas
-
-**Decidido:**
-
-1. **E-mail transacional: Resend.** Necessário a partir do P2 (convites, reset de senha, avisos LGPD). Driver console em dev, Resend em produção. Pendência operacional: verificar o domínio de envio no painel do Resend antes do deploy.
-2. **Arquivos: Supabase Storage** (somente Storage; o banco segue no Postgres da aplicação). Implementação no P8.5, com buckets privados, pastas por tenant e URLs assinadas.
-
-**Evolução pós-MVP (não construir agora):**
-
-3. **Cobrança dos tenants** (monetização do SaaS): campo `plano` já existe no tenant para não exigir migração depois.
-4. **Portal do viajante** (cliente final consultando a própria inscrição e pagando online): maior diferencial competitivo, mas só após validar o MVP com a primeira guia.
-
----
-
-*Documento de construção · maluporai v0.2 · Setembro/2026*
+​
+5. Decisões tomadas e evoluções planejadas
+Decidido:
+E-mail transacional: Resend. Necessário a partir do P2 (convites, reset de senha, avisos LGPD). Driver console em dev, Resend em produção. Pendência operacional: verificar o domínio de envio no painel do Resend antes do deploy.
+Arquivos: Supabase Storage (somente Storage; o banco segue no Postgres da aplicação). Implementação no P8.5, com buckets privados, pastas por tenant e URLs assinadas.
+Evolução pós-MVP (não construir agora):
+Cobrança dos tenants (monetização do SaaS): campo plano já existe no tenant para não exigir migração depois.
+Portal do viajante (cliente final consultando a própria inscrição e pagando online): maior diferencial competitivo, mas só após validar o MVP com a primeira guia.
+Documento de construção · maluporai v0.3 · Setembro/2026
