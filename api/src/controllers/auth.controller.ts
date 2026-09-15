@@ -65,3 +65,8 @@ export async function redefinirSenha(req: Request, res: Response) {
   await authService.resetPassword(req.body);
   res.json({ message: 'Senha redefinida com sucesso. Faça login novamente.' });
 }
+
+export async function ativarConta(req: Request, res: Response) {
+  await authService.activateAccount(req.body);
+  res.json({ message: 'Conta ativada com sucesso. Faça login para continuar.' });
+}

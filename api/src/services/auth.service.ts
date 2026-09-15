@@ -8,7 +8,9 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { prisma } from '../lib/prisma.js';
 import { runWithTenant } from '../lib/tenant-context.js';
 import { generateOpaqueToken, hashOpaqueToken } from '../lib/tokens.js';
+import { markActivationTokenUsed } from '../repositories/activation-token.repository.js';
 import {
+  findActivationTokenByHash,
   findRefreshTokenByHash,
   findResetTokenByHash,
   findUserAuthByEmail,
@@ -25,8 +27,14 @@ import {
   revokeRefreshTokenFamily,
 } from '../repositories/refresh-token.repository.js';
 import { createDefaultTenantSettings, createTenant, markTenantCancelada } from '../repositories/tenant.repository.js';
-import { createAdminUser, findUserById, touchLastLogin, updatePasswordHash } from '../repositories/user.repository.js';
-import type { LoginInput, RedefinirSenhaInput, SignupInput } from '../schemas/auth.schema.js';
+import {
+  activateUser,
+  createAdminUser,
+  findUserById,
+  touchLastLogin,
+  updatePasswordHash,
+} from '../repositories/user.repository.js';
+import type { AtivarContaInput, LoginInput, RedefinirSenhaInput, SignupInput } from '../schemas/auth.schema.js';
 import { emailService } from './email.service.js';
 
 const INVALID_CREDENTIALS_MESSAGE = 'Credenciais inválidas';
@@ -278,6 +286,36 @@ export async function resetPassword(input: RedefinirSenhaInput): Promise<void> {
     await updatePasswordHash(row.user_id, senhaHash);
     await markPasswordResetTokenUsed(row.id);
     await revokeAllRefreshTokensForUser(row.user_id);
+    await recordAuditLog({ acao: 'update', entidade: 'user', entidadeId: row.user_id, userId: row.user_id });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Ativação de convite (P3)
+// ---------------------------------------------------------------------------
+
+export async function activateAccount(input: AtivarContaInput): Promise<void> {
+  const tokenHash = hashOpaqueToken(input.token);
+  const row = await findActivationTokenByHash(tokenHash);
+
+  const invalidTokenError = new AppError(400, 'INVALID_ACTIVATION_TOKEN', 'Token inválido ou expirado');
+  if (!row || row.used_at || row.expires_at.getTime() < Date.now()) {
+    throw invalidTokenError;
+  }
+
+  const senhaHash = await hashPassword(input.senha);
+
+  await runWithTenant(row.tenant_id, async () => {
+    const user = await findUserById(row.user_id);
+    // Token válido mas a conta já não está mais 'convidado' (ativada antes
+    // por outro uso do link, ou desativada nesse meio-tempo) — mesmo erro
+    // genérico, não distingue os casos.
+    if (user.status !== 'convidado') {
+      throw invalidTokenError;
+    }
+
+    await activateUser(row.user_id, senhaHash);
+    await markActivationTokenUsed(row.id);
     await recordAuditLog({ acao: 'update', entidade: 'user', entidadeId: row.user_id, userId: row.user_id });
   });
 }

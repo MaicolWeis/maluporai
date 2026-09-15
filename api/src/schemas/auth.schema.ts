@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isCommonPassword } from '../lib/password.js';
 
-const senhaSchema = z
+export const senhaSchema = z
   .string()
   .min(8, 'Senha deve ter ao menos 8 caracteres')
   .refine((senha) => !isCommonPassword(senha), { message: 'Senha muito comum, escolha outra' });
@@ -28,7 +28,13 @@ export const redefinirSenhaSchema = z.object({
   senha: senhaSchema,
 });
 
+export const ativarContaSchema = z.object({
+  token: z.string().min(10, 'Token inválido'),
+  senha: senhaSchema,
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type EsqueciSenhaInput = z.infer<typeof esqueciSenhaSchema>;
 export type RedefinirSenhaInput = z.infer<typeof redefinirSenhaSchema>;
+export type AtivarContaInput = z.infer<typeof ativarContaSchema>;
