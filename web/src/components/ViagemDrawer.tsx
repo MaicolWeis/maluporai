@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import type { ClienteListItem } from '../types/cliente';
 import type {
@@ -9,7 +10,7 @@ import type {
   Incluso,
   InscricaoItem,
   InscricoesDaViagem,
-  PagamentoForma,
+  Pagamento,
   StatusPagamento,
   ViagemDetalhe,
   ViagemStatus,
@@ -76,14 +77,13 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
   const [mudandoStatus, setMudandoStatus] = useState(false);
   const [erroStatus, setErroStatus] = useState('');
 
+  // Sem setCarregando aqui: recarregar() roda depois de toda mutação (pagamento,
+  // edição, cancelamento…) dentro das abas, e piscar "Carregando…" desmontaria
+  // a árvore inteira das abas — perdendo estado local como o toggle da linha
+  // do tempo de pagamentos aberta. O "Carregando…" é só pro carregamento inicial.
   const carregar = async (id: string) => {
-    setCarregando(true);
-    try {
-      const { data } = await api.get(`/viagens/${id}`);
-      setViagem(data.viagem);
-    } finally {
-      setCarregando(false);
-    }
+    const { data } = await api.get(`/viagens/${id}`);
+    setViagem(data.viagem);
   };
 
   useEffect(() => {
@@ -93,7 +93,8 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
     }
     setAba('resumo');
     setErroStatus('');
-    carregar(viagemId);
+    setCarregando(true);
+    carregar(viagemId).finally(() => setCarregando(false));
   }, [viagemId]);
 
   const recarregar = async () => {
@@ -690,30 +691,29 @@ const STATUS_INSCRICAO_LABEL: Record<InscricaoItem['status'], string> = {
   cancelada: 'Cancelada',
 };
 
-const FORMA_PAGAMENTO_LABEL: Record<PagamentoForma, string> = {
-  pix: 'Pix',
-  cartao: 'Cartão',
-  dinheiro: 'Dinheiro',
-  transferencia: 'Transferência',
-};
-
 function AbaClientes({ viagem, onAtualizado }: { viagem: ViagemDetalhe; onAtualizado: () => void }) {
   const [dados, setDados] = useState<InscricoesDaViagem | null>(null);
+  const [formasPagamento, setFormasPagamento] = useState<string[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
 
+  useEffect(() => {
+    api.get('/pagamentos/formas').then(({ data }) => {
+      setFormasPagamento(data.formasPagamento ?? []);
+    });
+  }, []);
+
+  // Sem setCarregando no recarregar (só no efeito inicial): senão o "Carregando…"
+  // desmontaria a lista de InscricaoCard a cada mutação (pagamento, edição…),
+  // perdendo o estado local de cada card (linha do tempo aberta, form em edição).
   const carregar = async () => {
-    setCarregando(true);
-    try {
-      const { data } = await api.get(`/viagens/${viagem.id}/inscricoes`);
-      setDados(data);
-    } finally {
-      setCarregando(false);
-    }
+    const { data } = await api.get(`/viagens/${viagem.id}/inscricoes`);
+    setDados(data);
   };
 
   useEffect(() => {
-    carregar();
+    setCarregando(true);
+    carregar().finally(() => setCarregando(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viagem.id]);
 
@@ -769,7 +769,7 @@ function AbaClientes({ viagem, onAtualizado }: { viagem: ViagemDetalhe; onAtuali
       ) : (
         <div className="space-y-2">
           {dados.inscricoes.map((i) => (
-            <InscricaoCard key={i.id} inscricao={i} onAtualizado={recarregar} />
+            <InscricaoCard key={i.id} inscricao={i} formasPagamento={formasPagamento} onAtualizado={recarregar} />
           ))}
         </div>
       )}
@@ -980,8 +980,20 @@ function FormInscricao({
   );
 }
 
-function InscricaoCard({ inscricao, onAtualizado }: { inscricao: InscricaoItem; onAtualizado: () => void }) {
+function InscricaoCard({
+  inscricao,
+  formasPagamento,
+  onAtualizado,
+}: {
+  inscricao: InscricaoItem;
+  formasPagamento: string[];
+  onAtualizado: () => void;
+}) {
+  const { user } = useAuth();
   const [editando, setEditando] = useState(false);
+  const [pagamentosAbertos, setPagamentosAbertos] = useState(false);
+  const [pagamentos, setPagamentos] = useState<Pagamento[] | null>(null);
+  const [mostrarFormPagamento, setMostrarFormPagamento] = useState(false);
   const [form, setForm] = useState({
     levaAcompanhante: inscricao.levaAcompanhante,
     nomeAcompanhante: inscricao.nomeAcompanhante ?? '',
@@ -1022,7 +1034,31 @@ function InscricaoCard({ inscricao, onAtualizado }: { inscricao: InscricaoItem; 
     }
   };
 
+  const carregarPagamentos = async () => {
+    const { data } = await api.get(`/inscricoes/${inscricao.id}/pagamentos`);
+    setPagamentos(data.pagamentos);
+  };
+
+  const alternarPagamentos = async () => {
+    const abrindo = !pagamentosAbertos;
+    setPagamentosAbertos(abrindo);
+    if (abrindo && !pagamentos) await carregarPagamentos();
+  };
+
+  const excluirPagamento = async (pagamentoId: string) => {
+    const motivo = window.prompt('Motivo da exclusão do pagamento:');
+    if (!motivo) return;
+    try {
+      await api.delete(`/pagamentos/${pagamentoId}`, { data: { motivo } });
+      await carregarPagamentos();
+      onAtualizado();
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message ?? 'Não foi possível excluir o pagamento.');
+    }
+  };
+
   const podeEditar = inscricao.status !== 'cancelada';
+  const pctPago = Math.min(100, Math.round((Number(inscricao.valorPago) / Number(inscricao.valorTotal)) * 100) || 0);
 
   return (
     <div className="border border-stone-200 rounded-lg p-3">
@@ -1041,13 +1077,77 @@ function InscricaoCard({ inscricao, onAtualizado }: { inscricao: InscricaoItem; 
         {inscricao.levaAcompanhante && <Pill>Acompanhante: {inscricao.nomeAcompanhante}</Pill>}
         {inscricao.seguroViagem && <Pill>Seguro</Pill>}
         {inscricao.formaPagamentoPredominante && (
-          <Pill cls="bg-zinc-900 text-amber-400">{FORMA_PAGAMENTO_LABEL[inscricao.formaPagamentoPredominante]}</Pill>
+          <Pill cls="bg-zinc-900 text-amber-400">{inscricao.formaPagamentoPredominante}</Pill>
         )}
       </div>
 
-      <p className="text-xs text-zinc-600">
-        R$ {Number(inscricao.valorPago).toFixed(2)} de R$ {Number(inscricao.valorTotal).toFixed(2)}
-      </p>
+      <div className="mb-1">
+        <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden">
+          <div className="h-full bg-emerald-400" style={{ width: `${pctPago}%` }} />
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={alternarPagamentos}
+        className="text-xs text-zinc-600 hover:text-zinc-900"
+      >
+        R$ {Number(inscricao.valorPago).toFixed(2)} de R$ {Number(inscricao.valorTotal).toFixed(2)} —{' '}
+        {pagamentosAbertos ? 'ocultar pagamentos' : 'ver pagamentos'}
+      </button>
+
+      {pagamentosAbertos && (
+        <div className="mt-2 border-t border-stone-100 pt-2 space-y-2">
+          {!pagamentos ? (
+            <p className="text-xs text-zinc-400">Carregando…</p>
+          ) : pagamentos.length === 0 ? (
+            <p className="text-xs text-zinc-400">Nenhum pagamento registrado ainda.</p>
+          ) : (
+            <ul className="space-y-1">
+              {pagamentos.map((p) => (
+                <li key={p.id} className="flex items-center justify-between text-xs text-zinc-600">
+                  <span>
+                    {new Date(p.dataPagamento).toLocaleDateString('pt-BR')} — {p.forma}
+                    {p.parcelas && p.parcelas > 1 ? ` (${p.parcelas}x)` : ''} — R$ {Number(p.valor).toFixed(2)}
+                  </span>
+                  {user?.papel === 'admin' && (
+                    <button
+                      type="button"
+                      onClick={() => excluirPagamento(p.id)}
+                      aria-label="Excluir pagamento"
+                      className="text-zinc-400 hover:text-red-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {podeEditar && !mostrarFormPagamento && (
+            <button
+              type="button"
+              onClick={() => setMostrarFormPagamento(true)}
+              className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+            >
+              + Registrar pagamento
+            </button>
+          )}
+
+          {mostrarFormPagamento && (
+            <FormPagamento
+              inscricao={inscricao}
+              formasPagamento={formasPagamento}
+              onRegistrado={async () => {
+                setMostrarFormPagamento(false);
+                await carregarPagamentos();
+                onAtualizado();
+              }}
+              onCancelar={() => setMostrarFormPagamento(false)}
+            />
+          )}
+        </div>
+      )}
 
       {podeEditar && !editando && (
         <div className="flex gap-3 mt-2">
@@ -1106,5 +1206,144 @@ function InscricaoCard({ inscricao, onAtualizado }: { inscricao: InscricaoItem; 
         </form>
       )}
     </div>
+  );
+}
+
+function FormPagamento({
+  inscricao,
+  formasPagamento,
+  onRegistrado,
+  onCancelar,
+}: {
+  inscricao: InscricaoItem;
+  formasPagamento: string[];
+  onRegistrado: () => void;
+  onCancelar: () => void;
+}) {
+  const saldo = Math.max(0, Number(inscricao.valorTotal) - Number(inscricao.valorPago));
+  const [valor, setValor] = useState(saldo > 0 ? saldo.toFixed(2) : '');
+  const [forma, setForma] = useState(formasPagamento[0] ?? '');
+  const [parcelas, setParcelas] = useState('');
+  const [dataPagamento, setDataPagamento] = useState(new Date().toISOString().slice(0, 10));
+  const [ajusteFinanceiro, setAjusteFinanceiro] = useState(false);
+  const [observacoes, setObservacoes] = useState('');
+  const [erro, setErro] = useState('');
+  const [enviando, setEnviando] = useState(false);
+
+  const excedeSaldo = Number(valor || 0) > saldo;
+  const ehCartao = forma.toLowerCase().includes('cart');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro('');
+    setEnviando(true);
+    try {
+      await api.post(`/inscricoes/${inscricao.id}/pagamentos`, {
+        valor: Number(valor),
+        forma,
+        parcelas: ehCartao && parcelas ? Number(parcelas) : undefined,
+        dataPagamento,
+        observacoes: observacoes.trim() || undefined,
+        ajusteFinanceiro,
+      });
+      onRegistrado();
+    } catch (err: any) {
+      setErro(err.response?.data?.error?.message ?? 'Não foi possível registrar o pagamento.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="border border-stone-200 rounded-lg p-3 space-y-2 mt-2">
+      <div>
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <Input
+              label="Valor (R$)"
+              type="number"
+              min={0}
+              step="0.01"
+              required
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+            />
+          </div>
+          {saldo > 0 && (
+            <button
+              type="button"
+              onClick={() => setValor(saldo.toFixed(2))}
+              className="text-xs font-semibold text-amber-600 hover:text-amber-700 pb-2"
+            >
+              Quitar saldo
+            </button>
+          )}
+        </div>
+      </div>
+
+      <Select label="Forma" required value={forma} onChange={(e) => setForma(e.target.value)}>
+        {formasPagamento.length === 0 && <option value="">Nenhuma forma configurada</option>}
+        {formasPagamento.map((f) => (
+          <option key={f} value={f}>
+            {f}
+          </option>
+        ))}
+      </Select>
+
+      {ehCartao && (
+        <Input
+          label="Parcelas"
+          type="number"
+          min={1}
+          value={parcelas}
+          onChange={(e) => setParcelas(e.target.value)}
+        />
+      )}
+
+      <Input
+        label="Data do pagamento"
+        type="date"
+        required
+        value={dataPagamento}
+        onChange={(e) => setDataPagamento(e.target.value)}
+      />
+
+      {excedeSaldo && (
+        <div className="text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 space-y-2">
+          <p className="text-amber-700">
+            Esse valor passa do saldo restante (R$ {saldo.toFixed(2)}). Só é aceito como ajuste financeiro,
+            registrado nas observações.
+          </p>
+          <label className="flex items-center gap-2 text-zinc-600">
+            <input
+              type="checkbox"
+              checked={ajusteFinanceiro}
+              onChange={(e) => setAjusteFinanceiro(e.target.checked)}
+            />
+            Confirmar ajuste financeiro
+          </label>
+        </div>
+      )}
+
+      <label className="block text-xs text-zinc-500">
+        Observações {excedeSaldo && '(obrigatório pro ajuste)'}
+        <textarea
+          value={observacoes}
+          onChange={(e) => setObservacoes(e.target.value)}
+          rows={2}
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+      </label>
+
+      {erro && <p className="text-red-600 text-xs">{erro}</p>}
+      <div className="flex gap-2">
+        <Button type="submit" disabled={enviando || !forma} className="flex-1">
+          {enviando ? 'Registrando…' : 'Registrar'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancelar} className="flex-1">
+          Cancelar
+        </Button>
+      </div>
+    </form>
   );
 }

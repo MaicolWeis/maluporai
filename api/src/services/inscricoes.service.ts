@@ -1,4 +1,4 @@
-import { Prisma, type InscricaoStatus, type PagamentoForma } from '@prisma/client';
+import { Prisma, type InscricaoStatus } from '@prisma/client';
 import { AppError, notFound } from '../lib/errors.js';
 import { derivarStatusPagamento, somarPagamentos } from '../lib/pagamento.js';
 import { recordAuditLog } from '../repositories/audit-log.repository.js';
@@ -23,13 +23,13 @@ interface RequestMeta {
 }
 
 /** Maior soma paga por forma — "Pill de forma de pagamento predominante" no protótipo. */
-function formaPredominante(pagamentos: { valor: Prisma.Decimal; forma: PagamentoForma }[]): PagamentoForma | null {
+function formaPredominante(pagamentos: { valor: Prisma.Decimal; forma: string }[]): string | null {
   if (pagamentos.length === 0) return null;
-  const totaisPorForma = new Map<PagamentoForma, Prisma.Decimal>();
+  const totaisPorForma = new Map<string, Prisma.Decimal>();
   for (const p of pagamentos) {
     totaisPorForma.set(p.forma, (totaisPorForma.get(p.forma) ?? new Prisma.Decimal(0)).add(p.valor));
   }
-  let melhorForma: PagamentoForma = pagamentos[0].forma;
+  let melhorForma = pagamentos[0].forma;
   let melhorTotal = new Prisma.Decimal(0);
   for (const [forma, total] of totaisPorForma) {
     if (total.gt(melhorTotal)) {
@@ -49,7 +49,7 @@ function toInscricaoDTO(inscricao: {
   valorTotal: Prisma.Decimal;
   createdAt: Date;
   cliente: { id: string; nome: string; telefone: string };
-  pagamentos: { valor: Prisma.Decimal; forma: PagamentoForma }[];
+  pagamentos: { valor: Prisma.Decimal; forma: string }[];
 }) {
   const valorPago = somarPagamentos(inscricao.pagamentos);
   return {
@@ -150,9 +150,14 @@ export async function criarInscricao(viagemId: string, input: CriarInscricaoInpu
   return toInscricaoDTO(inscricao);
 }
 
-async function garantirInscricaoEditavel(id: string) {
+export async function garantirInscricao(id: string) {
   const inscricao = await findInscricaoByIdOrNull(id);
   if (!inscricao) throw notFound();
+  return inscricao;
+}
+
+export async function garantirInscricaoEditavel(id: string) {
+  const inscricao = await garantirInscricao(id);
   if (inscricao.status === 'cancelada') {
     throw new AppError(409, 'INSCRICAO_CANCELADA', 'Não é possível editar uma inscrição cancelada');
   }

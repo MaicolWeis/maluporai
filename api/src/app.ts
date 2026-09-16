@@ -11,6 +11,7 @@ import { clientesRouter } from './routes/clientes.routes.js';
 import { configuracoesRouter } from './routes/configuracoes.routes.js';
 import { healthRouter } from './routes/health.js';
 import { inscricoesPorViagemRouter, inscricoesRouter } from './routes/inscricoes.routes.js';
+import { pagamentosPorInscricaoRouter, pagamentosRouter } from './routes/pagamentos.routes.js';
 import { usuariosRouter } from './routes/usuarios.routes.js';
 import { viagensRouter } from './routes/viagens.routes.js';
 
@@ -37,7 +38,9 @@ export function createApp() {
   app.use('/clientes', clientesRouter);
   app.use('/viagens', viagensRouter);
   app.use('/viagens/:viagemId/inscricoes', inscricoesPorViagemRouter);
+  app.use('/inscricoes/:inscricaoId/pagamentos', pagamentosPorInscricaoRouter);
   app.use('/inscricoes', inscricoesRouter);
+  app.use('/pagamentos', pagamentosRouter);
 
   app.use(errorHandler);
   return app;
