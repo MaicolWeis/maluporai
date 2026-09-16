@@ -4,10 +4,16 @@ import { Button } from './Button';
 import { Input } from './Input';
 import { Modal } from './Modal';
 
+interface ClienteCriado {
+  id: string;
+  nome: string;
+  telefone: string;
+}
+
 interface Props {
   aberto: boolean;
   onFechar: () => void;
-  onCriado: () => void;
+  onCriado: (cliente: ClienteCriado) => void;
 }
 
 export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
@@ -42,7 +48,7 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
     setErro('');
     setEnviando(true);
     try {
-      await api.post('/clientes', {
+      const { data } = await api.post('/clientes', {
         nome,
         telefone,
         cpf: cpf.trim() || undefined,
@@ -51,7 +57,7 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
         uf: uf.trim() || undefined,
         consentimentoMarketing,
       });
-      onCriado();
+      onCriado(data.cliente);
       fechar();
     } catch (err: any) {
       setErro(err.response?.data?.error?.message ?? 'Não foi possível criar o cliente.');

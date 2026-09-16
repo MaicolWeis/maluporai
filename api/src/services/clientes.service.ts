@@ -2,6 +2,7 @@ import { Prisma, type Cliente, type InscricaoStatus, type PagamentoForma } from 
 import { AppError, notFound, unauthorized } from '../lib/errors.js';
 import { decryptField, encryptField, hashForLookup } from '../lib/crypto.js';
 import { maskCpf } from '../lib/cpf.js';
+import { derivarStatusPagamento, somarPagamentos } from '../lib/pagamento.js';
 import { verifyPassword } from '../lib/password.js';
 import { recordAuditLog } from '../repositories/audit-log.repository.js';
 import {
@@ -95,13 +96,6 @@ export async function listarClientes(query: ListarClientesQuery) {
   };
 }
 
-/** Mesmo racional da observação de modelagem da seção 2: status derivado, nunca guardado. */
-function derivarStatusPagamento(valorTotal: Prisma.Decimal, pago: Prisma.Decimal): 'pago' | 'parcial' | 'pendente' {
-  if (pago.gte(valorTotal)) return 'pago';
-  if (pago.gt(0)) return 'parcial';
-  return 'pendente';
-}
-
 function toInscricaoResumoDTO(inscricao: {
   id: string;
   viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string };
@@ -110,7 +104,7 @@ function toInscricaoResumoDTO(inscricao: {
   pagamentos: { valor: Prisma.Decimal }[];
   createdAt: Date;
 }) {
-  const pago = inscricao.pagamentos.reduce((soma, p) => soma.add(p.valor), new Prisma.Decimal(0));
+  const pago = somarPagamentos(inscricao.pagamentos);
   return {
     id: inscricao.id,
     viagem: inscricao.viagem,
