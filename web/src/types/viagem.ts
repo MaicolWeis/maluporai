@@ -51,7 +51,6 @@ export interface Incluso {
 
 export type InscricaoStatus = 'confirmada' | 'cancelada' | 'lista_espera';
 export type StatusPagamento = 'pago' | 'parcial' | 'pendente';
-export type PagamentoForma = 'pix' | 'cartao' | 'dinheiro' | 'transferencia';
 
 export interface InscricaoItem {
   id: string;
@@ -63,7 +62,7 @@ export interface InscricaoItem {
   valorTotal: string;
   valorPago: string;
   statusPagamento: StatusPagamento;
-  formaPagamentoPredominante: PagamentoForma | null;
+  formaPagamentoPredominante: string | null;
   createdAt: string;
 }
 
@@ -72,6 +71,18 @@ export interface InscricoesDaViagem {
   capacidade: number;
   pessoasConfirmadas: number;
   vagasRestantes: number;
+}
+
+export interface Pagamento {
+  id: string;
+  inscricaoId: string;
+  valor: string;
+  forma: string;
+  parcelas: number | null;
+  dataPagamento: string;
+  comprovanteUrl: string | null;
+  observacoes: string | null;
+  createdAt: string;
 }
 
 export interface ViagemDetalhe {

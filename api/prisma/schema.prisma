@@ -322,26 +322,20 @@ model Inscricao {
   @@map("inscricoes")
 }
 
-enum PagamentoForma {
-  pix
-  cartao
-  dinheiro
-  transferencia
-
-  @@map("pagamento_forma")
-}
-
+// Forma de pagamento não é mais enum fixo — vem das tenant_settings
+// (formas_pagamento, customizável por tenant desde o P4). Validada na
+// aplicação contra essa lista, não pelo banco.
 model Pagamento {
-  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId        String         @map("tenant_id") @db.Uuid
-  inscricaoId     String         @map("inscricao_id") @db.Uuid
-  valor           Decimal        @db.Decimal(10, 2)
-  forma           PagamentoForma
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  inscricaoId     String    @map("inscricao_id") @db.Uuid
+  valor           Decimal   @db.Decimal(10, 2)
+  forma           String
   parcelas        Int?
-  dataPagamento   DateTime       @map("data_pagamento") @db.Date
-  comprovanteUrl  String?        @map("comprovante_url")
+  dataPagamento   DateTime  @map("data_pagamento") @db.Date
+  comprovanteUrl  String?   @map("comprovante_url")
   observacoes     String?
-  createdAt       DateTime       @default(now()) @map("created_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   inscricao Inscricao @relation(fields: [inscricaoId], references: [id])
 

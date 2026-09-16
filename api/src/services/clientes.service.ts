@@ -1,4 +1,4 @@
-import { Prisma, type Cliente, type InscricaoStatus, type PagamentoForma } from '@prisma/client';
+import { Prisma, type Cliente, type InscricaoStatus } from '@prisma/client';
 import { AppError, notFound, unauthorized } from '../lib/errors.js';
 import { decryptField, encryptField, hashForLookup } from '../lib/crypto.js';
 import { maskCpf } from '../lib/cpf.js';
@@ -288,7 +288,7 @@ interface DadosExportados {
     valorTotal: unknown;
     status: InscricaoStatus;
     createdAt: Date;
-    pagamentos: { id: string; valor: unknown; forma: PagamentoForma; dataPagamento: Date }[];
+    pagamentos: { id: string; valor: unknown; forma: string; dataPagamento: Date }[];
   }[];
 }
 
