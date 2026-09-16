@@ -1,11 +1,24 @@
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { Atracao, AtracaoTipo, Hotel, Incluso, ViagemDetalhe, ViagemStatus } from '../types/viagem';
+import type { ClienteListItem } from '../types/cliente';
+import type {
+  Atracao,
+  AtracaoTipo,
+  Hotel,
+  Incluso,
+  InscricaoItem,
+  InscricoesDaViagem,
+  PagamentoForma,
+  StatusPagamento,
+  ViagemDetalhe,
+  ViagemStatus,
+} from '../types/viagem';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
 import { Input } from './Input';
+import { NovoClienteModal } from './NovoClienteModal';
 import { Pill } from './Pill';
 import { Select } from './Select';
 
@@ -176,9 +189,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
           </div>
 
           {aba === 'resumo' && <AbaResumo viagem={viagem} onAtualizado={recarregar} />}
-          {aba === 'clientes' && (
-            <EmptyState titulo="Clientes da viagem" descricao="As inscrições chegam no P7." />
-          )}
+          {aba === 'clientes' && <AbaClientes viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'despesas' && <EmptyState titulo="Despesas" descricao="O controle de despesas chega no P9." />}
           {aba === 'financeiro' && (
             <EmptyState titulo="Financeiro" descricao="O dashboard financeiro chega no P10." />
@@ -659,6 +670,441 @@ function InclusosSecao({
           Adicionar
         </button>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Aba Clientes (inscrições)
+// ---------------------------------------------------------------------------
+
+const STATUS_PAGAMENTO_PILL: Record<StatusPagamento, string> = {
+  pago: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+  parcial: 'bg-amber-100 text-amber-700 border border-amber-200',
+  pendente: 'bg-red-100 text-red-700 border border-red-200',
+};
+
+const STATUS_INSCRICAO_LABEL: Record<InscricaoItem['status'], string> = {
+  confirmada: 'Confirmada',
+  lista_espera: 'Lista de espera',
+  cancelada: 'Cancelada',
+};
+
+const FORMA_PAGAMENTO_LABEL: Record<PagamentoForma, string> = {
+  pix: 'Pix',
+  cartao: 'Cartão',
+  dinheiro: 'Dinheiro',
+  transferencia: 'Transferência',
+};
+
+function AbaClientes({ viagem, onAtualizado }: { viagem: ViagemDetalhe; onAtualizado: () => void }) {
+  const [dados, setDados] = useState<InscricoesDaViagem | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [mostrarForm, setMostrarForm] = useState(false);
+
+  const carregar = async () => {
+    setCarregando(true);
+    try {
+      const { data } = await api.get(`/viagens/${viagem.id}/inscricoes`);
+      setDados(data);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viagem.id]);
+
+  const recarregar = async () => {
+    await carregar();
+    onAtualizado();
+  };
+
+  const podeInscrever = viagem.status === 'inscricoes' || viagem.status === 'confirmada';
+
+  return (
+    <div className="space-y-4">
+      {dados && (
+        <div className="flex items-center justify-between text-xs text-zinc-500 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
+          <span>Vagas restantes</span>
+          <span className="font-bold text-zinc-900">
+            {dados.vagasRestantes} de {dados.capacidade}
+          </span>
+        </div>
+      )}
+
+      {podeInscrever ? (
+        <div>
+          <button
+            type="button"
+            onClick={() => setMostrarForm((v) => !v)}
+            className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+          >
+            {mostrarForm ? 'Cancelar' : '+ Inscrever cliente'}
+          </button>
+          {mostrarForm && dados && (
+            <FormInscricao
+              viagem={viagem}
+              inscritos={dados.inscricoes}
+              vagasRestantes={dados.vagasRestantes}
+              onCriado={() => {
+                setMostrarForm(false);
+                recarregar();
+              }}
+            />
+          )}
+        </div>
+      ) : (
+        <p className="text-xs text-zinc-400">
+          Inscrições só podem ser feitas com a viagem em "Inscrições abertas" ou "Confirmada".
+        </p>
+      )}
+
+      {carregando || !dados ? (
+        <p className="text-sm text-zinc-500">Carregando…</p>
+      ) : dados.inscricoes.length === 0 ? (
+        <EmptyState titulo="Nenhum inscrito ainda" descricao="Use o atalho acima pra inscrever o primeiro cliente." />
+      ) : (
+        <div className="space-y-2">
+          {dados.inscricoes.map((i) => (
+            <InscricaoCard key={i.id} inscricao={i} onAtualizado={recarregar} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FormInscricao({
+  viagem,
+  inscritos,
+  vagasRestantes,
+  onCriado,
+}: {
+  viagem: ViagemDetalhe;
+  inscritos: InscricaoItem[];
+  vagasRestantes: number;
+  onCriado: () => void;
+}) {
+  const [busca, setBusca] = useState('');
+  const [resultados, setResultados] = useState<ClienteListItem[]>([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState<{ id: string; nome: string; telefone: string } | null>(
+    null,
+  );
+  const [levaAcompanhante, setLevaAcompanhante] = useState(false);
+  const [nomeAcompanhante, setNomeAcompanhante] = useState('');
+  const [docAcompanhante, setDocAcompanhante] = useState('');
+  const [seguroViagem, setSeguroViagem] = useState(false);
+  const [seguradora, setSeguradora] = useState('');
+  const [numeroApolice, setNumeroApolice] = useState('');
+  const [valorTotal, setValorTotal] = useState(String(viagem.precoTitular));
+  const [valorEditadoManualmente, setValorEditadoManualmente] = useState(false);
+  const [modalNovoClienteAberto, setModalNovoClienteAberto] = useState(false);
+  const [erro, setErro] = useState('');
+  const [enviando, setEnviando] = useState(false);
+
+  const idsJaInscritos = new Set(inscritos.filter((i) => i.status !== 'cancelada').map((i) => i.cliente.id));
+
+  useEffect(() => {
+    if (!busca.trim()) {
+      setResultados([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      const { data } = await api.get('/clientes', { params: { busca } });
+      setResultados(data.clientes.filter((c: ClienteListItem) => !idsJaInscritos.has(c.id)));
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busca]);
+
+  useEffect(() => {
+    if (valorEditadoManualmente) return;
+    const precoAcompanhante = viagem.precoAcompanhante ? Number(viagem.precoAcompanhante) : 0;
+    const total = Number(viagem.precoTitular) + (levaAcompanhante ? precoAcompanhante : 0);
+    setValorTotal(String(total));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [levaAcompanhante]);
+
+  const pessoasDesta = 1 + (levaAcompanhante ? 1 : 0);
+  const cabeConfirmada = pessoasDesta <= vagasRestantes;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clienteSelecionado) {
+      setErro('Selecione um cliente');
+      return;
+    }
+    setErro('');
+    setEnviando(true);
+    try {
+      await api.post(`/viagens/${viagem.id}/inscricoes`, {
+        clienteId: clienteSelecionado.id,
+        levaAcompanhante,
+        nomeAcompanhante: levaAcompanhante ? nomeAcompanhante.trim() || undefined : undefined,
+        docAcompanhante: levaAcompanhante ? docAcompanhante.trim() || undefined : undefined,
+        seguroViagem,
+        seguradora: seguroViagem ? seguradora.trim() || undefined : undefined,
+        numeroApolice: seguroViagem ? numeroApolice.trim() || undefined : undefined,
+        valorTotal: valorTotal ? Number(valorTotal) : undefined,
+        status: cabeConfirmada ? 'confirmada' : 'lista_espera',
+      });
+      onCriado();
+    } catch (err: any) {
+      setErro(err.response?.data?.error?.message ?? 'Não foi possível inscrever o cliente.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <>
+    <form onSubmit={submit} className="border border-stone-200 rounded-lg p-3 space-y-3 mt-2">
+      {!clienteSelecionado ? (
+        <div>
+          <Input
+            label="Buscar cliente"
+            placeholder="Nome ou telefone"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+          {resultados.length > 0 && (
+            <div className="mt-1 border border-stone-200 rounded-lg divide-y divide-stone-100 max-h-40 overflow-y-auto">
+              {resultados.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setClienteSelecionado(c);
+                    setBusca('');
+                    setResultados([]);
+                  }}
+                  className="block w-full text-left px-3 py-2 text-sm hover:bg-stone-50"
+                >
+                  {c.nome} — {c.telefone}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setModalNovoClienteAberto(true)}
+            className="mt-2 text-xs font-semibold text-amber-600 hover:text-amber-700"
+          >
+            + Cadastrar cliente novo
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2">
+          <span className="text-sm font-semibold text-zinc-900">{clienteSelecionado.nome}</span>
+          <button
+            type="button"
+            onClick={() => setClienteSelecionado(null)}
+            className="text-xs text-zinc-500 hover:text-zinc-900"
+          >
+            Trocar
+          </button>
+        </div>
+      )}
+
+      <label className="flex items-center gap-2 text-xs text-zinc-600">
+        <input type="checkbox" checked={levaAcompanhante} onChange={(e) => setLevaAcompanhante(e.target.checked)} />
+        Leva acompanhante
+      </label>
+      {levaAcompanhante && (
+        <>
+          <Input
+            label="Nome do acompanhante"
+            required
+            value={nomeAcompanhante}
+            onChange={(e) => setNomeAcompanhante(e.target.value)}
+          />
+          <Input
+            label="Documento do acompanhante (opcional)"
+            value={docAcompanhante}
+            onChange={(e) => setDocAcompanhante(e.target.value)}
+          />
+        </>
+      )}
+
+      <label className="flex items-center gap-2 text-xs text-zinc-600">
+        <input type="checkbox" checked={seguroViagem} onChange={(e) => setSeguroViagem(e.target.checked)} />
+        Seguro viagem
+      </label>
+      {seguroViagem && (
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input label="Seguradora" value={seguradora} onChange={(e) => setSeguradora(e.target.value)} />
+          </div>
+          <div className="flex-1">
+            <Input label="Nº da apólice" value={numeroApolice} onChange={(e) => setNumeroApolice(e.target.value)} />
+          </div>
+        </div>
+      )}
+
+      <Input
+        label="Valor total (R$)"
+        type="number"
+        min={0}
+        step="0.01"
+        value={valorTotal}
+        onChange={(e) => {
+          setValorEditadoManualmente(true);
+          setValorTotal(e.target.value);
+        }}
+      />
+
+      {!cabeConfirmada && (
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+          Capacidade cheia — essa inscrição vai para a lista de espera.
+        </p>
+      )}
+
+      {erro && <p className="text-red-600 text-xs">{erro}</p>}
+      <Button type="submit" disabled={enviando || !clienteSelecionado} className="w-full">
+        {enviando ? 'Inscrevendo…' : cabeConfirmada ? 'Confirmar inscrição' : 'Inscrever em lista de espera'}
+      </Button>
+    </form>
+    {/* Fora do <form> de propósito: um <form> dentro de outro é HTML
+        inválido — o navegador "achata" o aninhamento e o clique em
+        "Criar cliente" acaba submetendo o form de fora nativamente
+        (sem passar pelo onSubmit do React), recarregando a página. */}
+    <NovoClienteModal
+      aberto={modalNovoClienteAberto}
+      onFechar={() => setModalNovoClienteAberto(false)}
+      onCriado={(cliente) => setClienteSelecionado(cliente)}
+    />
+    </>
+  );
+}
+
+function InscricaoCard({ inscricao, onAtualizado }: { inscricao: InscricaoItem; onAtualizado: () => void }) {
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({
+    levaAcompanhante: inscricao.levaAcompanhante,
+    nomeAcompanhante: inscricao.nomeAcompanhante ?? '',
+    seguroViagem: inscricao.seguroViagem,
+    valorTotal: inscricao.valorTotal,
+  });
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
+
+  const salvar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro('');
+    setSalvando(true);
+    try {
+      await api.patch(`/inscricoes/${inscricao.id}`, {
+        levaAcompanhante: form.levaAcompanhante,
+        nomeAcompanhante: form.levaAcompanhante ? form.nomeAcompanhante.trim() || undefined : undefined,
+        seguroViagem: form.seguroViagem,
+        valorTotal: Number(form.valorTotal),
+      });
+      setEditando(false);
+      onAtualizado();
+    } catch (err: any) {
+      setErro(err.response?.data?.error?.message ?? 'Não foi possível salvar.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const cancelar = async () => {
+    const motivo = window.prompt('Motivo do cancelamento:');
+    if (!motivo) return;
+    try {
+      await api.post(`/inscricoes/${inscricao.id}/cancelar`, { motivo });
+      onAtualizado();
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message ?? 'Não foi possível cancelar.');
+    }
+  };
+
+  const podeEditar = inscricao.status !== 'cancelada';
+
+  return (
+    <div className="border border-stone-200 rounded-lg p-3">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div>
+          <p className="font-semibold text-sm text-zinc-900">{inscricao.cliente.nome}</p>
+          <p className="text-xs text-zinc-500">{inscricao.cliente.telefone}</p>
+        </div>
+        <div className="flex flex-wrap gap-1 justify-end">
+          {inscricao.status !== 'confirmada' && <Pill>{STATUS_INSCRICAO_LABEL[inscricao.status]}</Pill>}
+          <Pill cls={STATUS_PAGAMENTO_PILL[inscricao.statusPagamento]}>{inscricao.statusPagamento}</Pill>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1 my-2">
+        {inscricao.levaAcompanhante && <Pill>Acompanhante: {inscricao.nomeAcompanhante}</Pill>}
+        {inscricao.seguroViagem && <Pill>Seguro</Pill>}
+        {inscricao.formaPagamentoPredominante && (
+          <Pill cls="bg-zinc-900 text-amber-400">{FORMA_PAGAMENTO_LABEL[inscricao.formaPagamentoPredominante]}</Pill>
+        )}
+      </div>
+
+      <p className="text-xs text-zinc-600">
+        R$ {Number(inscricao.valorPago).toFixed(2)} de R$ {Number(inscricao.valorTotal).toFixed(2)}
+      </p>
+
+      {podeEditar && !editando && (
+        <div className="flex gap-3 mt-2">
+          <button type="button" onClick={() => setEditando(true)} className="text-xs font-semibold text-amber-600 hover:text-amber-700">
+            Editar
+          </button>
+          <button type="button" onClick={cancelar} className="text-xs font-semibold text-red-600 hover:text-red-700">
+            Cancelar inscrição
+          </button>
+        </div>
+      )}
+
+      {editando && (
+        <form onSubmit={salvar} className="mt-3 space-y-2 border-t border-stone-100 pt-3">
+          <label className="flex items-center gap-2 text-xs text-zinc-600">
+            <input
+              type="checkbox"
+              checked={form.levaAcompanhante}
+              onChange={(e) => setForm({ ...form, levaAcompanhante: e.target.checked })}
+            />
+            Leva acompanhante
+          </label>
+          {form.levaAcompanhante && (
+            <Input
+              label="Nome do acompanhante"
+              required
+              value={form.nomeAcompanhante}
+              onChange={(e) => setForm({ ...form, nomeAcompanhante: e.target.value })}
+            />
+          )}
+          <label className="flex items-center gap-2 text-xs text-zinc-600">
+            <input
+              type="checkbox"
+              checked={form.seguroViagem}
+              onChange={(e) => setForm({ ...form, seguroViagem: e.target.checked })}
+            />
+            Seguro viagem
+          </label>
+          <Input
+            label="Valor total (R$)"
+            type="number"
+            min={0}
+            step="0.01"
+            value={form.valorTotal}
+            onChange={(e) => setForm({ ...form, valorTotal: e.target.value })}
+          />
+          {erro && <p className="text-red-600 text-xs">{erro}</p>}
+          <div className="flex gap-2">
+            <Button type="submit" disabled={salvando} className="flex-1">
+              {salvando ? 'Salvando…' : 'Salvar'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setEditando(false)} className="flex-1">
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

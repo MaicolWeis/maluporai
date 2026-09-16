@@ -1,5 +1,6 @@
 import { Prisma, type Viagem, type ViagemStatus } from '@prisma/client';
 import { AppError, notFound } from '../lib/errors.js';
+import { somarPagamentos } from '../lib/pagamento.js';
 import { recordAuditLog } from '../repositories/audit-log.repository.js';
 import {
   cancelarInscricoesDaViagem,
@@ -70,7 +71,7 @@ function calcularAgregados(viagem: ComAgregados) {
 
   const totalRecebido = viagem.inscricoes
     .filter((i) => i.status !== 'cancelada')
-    .reduce((soma, i) => i.pagamentos.reduce((s, p) => s.add(p.valor), soma), new Prisma.Decimal(0));
+    .reduce((soma, i) => soma.add(somarPagamentos(i.pagamentos)), new Prisma.Decimal(0));
 
   const totalDespesas = viagem.despesas.reduce((soma, d) => soma.add(d.valor), new Prisma.Decimal(0));
 
@@ -240,7 +241,7 @@ export async function excluirViagem(id: string, ator: Ator, meta: RequestMeta) {
 // Sub-recursos: hotéis, atrações, inclusos
 // ---------------------------------------------------------------------------
 
-async function garantirViagem(viagemId: string) {
+export async function garantirViagem(viagemId: string) {
   const viagem = await findViagemByIdOrNull(viagemId);
   if (!viagem) throw notFound('Viagem não encontrada');
   return viagem;
