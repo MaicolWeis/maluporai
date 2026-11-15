@@ -109,6 +109,7 @@ export async function deleteViagem(id: string) {
   await prisma.viagemHotel.deleteMany({ where: { viagemId: id } });
   await prisma.viagemAtracao.deleteMany({ where: { viagemId: id } });
   await prisma.viagemIncluso.deleteMany({ where: { viagemId: id } });
+  await prisma.despesa.deleteMany({ where: { viagemId: id } });
   await prisma.viagem.delete({ where: { id } });
 }
 

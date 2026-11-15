@@ -16,6 +16,7 @@ import type {
   ViagemDetalhe,
   ViagemStatus,
 } from '../types/viagem';
+import { AbaDespesas } from './AbaDespesas';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
@@ -187,7 +188,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
 
           {aba === 'resumo' && <AbaResumo viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'clientes' && <AbaClientes viagem={viagem} onAtualizado={recarregar} />}
-          {aba === 'despesas' && <EmptyState titulo="Despesas" descricao="O controle de despesas chega no P9." />}
+          {aba === 'despesas' && <AbaDespesas viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'financeiro' && (
             <EmptyState titulo="Financeiro" descricao="O dashboard financeiro chega no P10." />
           )}
