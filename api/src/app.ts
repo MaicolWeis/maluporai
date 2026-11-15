@@ -18,10 +18,10 @@ import { viagensRouter } from './routes/viagens.routes.js';
 export function createApp() {
   const app = express();
 
-  // Atrás de proxy (Railway etc.) em produção, para req.ip refletir o
+  // Atrás de proxy (Vercel + Railway) em produção, para req.ip refletir o
   // cliente real — sem isso o rate limit por IP colapsaria tudo num só IP.
   if (env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1);
+    app.set('trust proxy', env.TRUST_PROXY);
   }
 
   app.use(helmet());

@@ -11,7 +11,7 @@ function refreshCookieOptions() {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: 'strict' as const,
-    path: '/auth',
+    path: env.REFRESH_COOKIE_PATH,
     maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   };
 }
@@ -35,7 +35,7 @@ export async function login(req: Request, res: Response) {
 export async function refresh(req: Request, res: Response) {
   const rawToken = req.cookies?.[REFRESH_COOKIE_NAME];
   if (!rawToken) {
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/auth' });
+    res.clearCookie(REFRESH_COOKIE_NAME, { path: env.REFRESH_COOKIE_PATH });
     return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Sessão inválida, faça login novamente' } });
   }
 
@@ -43,7 +43,7 @@ export async function refresh(req: Request, res: Response) {
     const session = await authService.refreshSession(rawToken, { ip: req.ip });
     sendSession(res, session);
   } catch (err) {
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/auth' });
+    res.clearCookie(REFRESH_COOKIE_NAME, { path: env.REFRESH_COOKIE_PATH });
     throw err;
   }
 }
@@ -51,7 +51,7 @@ export async function refresh(req: Request, res: Response) {
 export async function logout(req: Request, res: Response) {
   const rawToken = req.cookies?.[REFRESH_COOKIE_NAME];
   await authService.logout(rawToken);
-  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/auth' });
+  res.clearCookie(REFRESH_COOKIE_NAME, { path: env.REFRESH_COOKIE_PATH });
   res.status(204).send();
 }
 

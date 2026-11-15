@@ -48,7 +48,16 @@ class ResendEmailDriver implements EmailDriver {
   }
 }
 
-export const emailService: EmailDriver =
-  env.NODE_ENV === 'production' && env.RESEND_API_KEY && env.EMAIL_FROM
-    ? new ResendEmailDriver(env.RESEND_API_KEY, env.EMAIL_FROM)
-    : new ConsoleEmailDriver();
+function createEmailDriver(): EmailDriver {
+  if (env.EMAIL_DRIVER === 'resend' && env.RESEND_API_KEY && env.EMAIL_FROM) {
+    return new ResendEmailDriver(env.RESEND_API_KEY, env.EMAIL_FROM);
+  }
+  if (env.NODE_ENV === 'production') {
+    logger.warn(
+      'EMAIL_DRIVER=console em produção: e-mails NÃO são enviados, links aparecem nos logs. Use só em ambiente de teste.',
+    );
+  }
+  return new ConsoleEmailDriver();
+}
+
+export const emailService: EmailDriver = createEmailDriver();

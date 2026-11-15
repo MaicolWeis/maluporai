@@ -26,4 +26,4 @@ npm run dev            # http://localhost:5173
 ## Documento de construção
 
 O plano completo (prompts P0–P12, modelo de dados, requisitos de segurança e LGPD)
-está em `docs/maluporai-prompts-construcao.md`. Status atual: **P0 concluído**.
+está em `docs/maluporai-prompts-construcao.md`. Status atual: **P0–P8 concluídos**. Deploy de teste: `docs/deploy.md`.
