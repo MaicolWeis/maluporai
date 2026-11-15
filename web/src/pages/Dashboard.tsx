@@ -147,9 +147,9 @@ export function Dashboard() {
                 <YAxis tickFormatter={(v) => brlCompacto.format(v)} tick={{ fontSize: 11, fill: '#71717a' }} width={70} />
                 <Tooltip formatter={(v: number) => formatBRL(v)} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Recebido" fill="#059669" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Despesas" fill="#dc2626" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Resultado" fill="#18181b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Recebido" fill="#059669" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="Despesas" fill="#dc2626" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="Resultado" fill="#18181b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
