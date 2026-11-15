@@ -11,24 +11,34 @@ const envSchema = z
     ENCRYPTION_KEY: z
       .string()
       .regex(/^[0-9a-fA-F]{64}$/, 'ENCRYPTION_KEY deve ter 64 caracteres hexadecimais (32 bytes)'),
-    // EmailService: driver console em dev/test, Resend em produção.
+    // Caminho do cookie de refresh. Atrás do proxy /api da Vercel o navegador
+    // enxerga as rotas como /api/auth/*, então em produção usamos /api/auth.
+    REFRESH_COOKIE_PATH: z.string().startsWith('/').default('/auth'),
+    // Quantos proxies confiáveis ficam na frente da API (Express "trust proxy").
+    // Vercel (rewrite /api) + borda do Railway = 2. Só aplicado em produção.
+    TRUST_PROXY: z.coerce.number().int().min(0).default(1),
+    // EmailService: driver console (só loga) ou Resend. Padrão: resend em
+    // produção, console fora dela. EMAIL_DRIVER=console em produção é opção
+    // explícita para ambiente de teste (links aparecem nos logs).
+    EMAIL_DRIVER: z.enum(['console', 'resend']).optional(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().email().optional(),
   })
   .superRefine((val, ctx) => {
-    if (val.NODE_ENV === 'production') {
+    const driver = val.EMAIL_DRIVER ?? (val.NODE_ENV === 'production' ? 'resend' : 'console');
+    if (driver === 'resend') {
       if (!val.RESEND_API_KEY) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['RESEND_API_KEY'],
-          message: 'RESEND_API_KEY é obrigatória em produção',
+          message: 'RESEND_API_KEY é obrigatória com EMAIL_DRIVER=resend',
         });
       }
       if (!val.EMAIL_FROM) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['EMAIL_FROM'],
-          message: 'EMAIL_FROM é obrigatória em produção',
+          message: 'EMAIL_FROM é obrigatória com EMAIL_DRIVER=resend',
         });
       }
     }
@@ -41,4 +51,8 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export const env = parsed.data;
+export const env = {
+  ...parsed.data,
+  EMAIL_DRIVER:
+    parsed.data.EMAIL_DRIVER ?? (parsed.data.NODE_ENV === 'production' ? 'resend' : 'console'),
+};
