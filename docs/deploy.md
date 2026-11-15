@@ -8,9 +8,9 @@ no Railway (rewrite em `web/vercel.json`). Assim o cookie de refresh
 ## Railway (API + Postgres)
 
 1. Projeto novo → **Deploy from GitHub repo** → `maluporai`, *Root Directory* `api`.
-   O `api/railway.json` define build, pre-deploy (`npm run release`) e start.
+   Em *Settings*: build `npx prisma generate && npm run build`, pre-deploy `npm run release`, start `npm run start:prod`, healthcheck `/health`, watch path `/api/**` (config-as-code foi descontinuado pelo Railway para serviços novos; `api/railway.json` fica como referência).
 2. Adicionar serviço **PostgreSQL** no mesmo projeto.
-3. *Networking* da API → gerar domínio público `maluporai-api.up.railway.app`
+3. *Networking* da API → gerar domínio público (porta 8080) — atual: `maluporai-production.up.railway.app`
    (se mudar, atualizar o destino em `web/vercel.json`).
 4. Variáveis da API:
 
