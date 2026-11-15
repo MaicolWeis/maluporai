@@ -4,6 +4,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { env } from './config/env.js';
+import { despesasPorViagemRouter, despesasRouter } from './routes/despesas.routes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -38,9 +39,11 @@ export function createApp() {
   app.use('/clientes', clientesRouter);
   app.use('/viagens', viagensRouter);
   app.use('/viagens/:viagemId/inscricoes', inscricoesPorViagemRouter);
+  app.use('/viagens/:viagemId/despesas', despesasPorViagemRouter);
   app.use('/inscricoes/:inscricaoId/pagamentos', pagamentosPorInscricaoRouter);
   app.use('/inscricoes', inscricoesRouter);
   app.use('/pagamentos', pagamentosRouter);
+  app.use('/despesas', despesasRouter);
 
   app.use(errorHandler);
   return app;

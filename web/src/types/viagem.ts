@@ -104,3 +104,20 @@ export interface ViagemDetalhe {
   inclusos: Incluso[];
   agregados: Agregados;
 }
+
+export interface Despesa {
+  id: string;
+  viagemId: string;
+  categoria: string;
+  descricao: string;
+  valor: string;
+  dataDespesa: string;
+  comprovanteUrl: string | null;
+  createdAt: string;
+}
+
+export interface DespesasDaViagem {
+  despesas: Despesa[];
+  total: string;
+  totalPorCategoria: { categoria: string; total: string }[];
+}
