@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { formatBRL } from '../lib/format';
 import type { ClienteDetalhe, InscricaoResumo } from '../types/cliente';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
@@ -295,7 +296,7 @@ function AbaViagens({ inscricoes }: { inscricoes: InscricaoResumo[] }) {
             {i.viagem.destinoCidade}/{i.viagem.destinoUf}
           </p>
           <p className="text-xs text-zinc-600 mt-1">
-            R$ {Number(i.valorPago).toFixed(2)} de R$ {Number(i.valorTotal).toFixed(2)}
+            {formatBRL(i.valorPago)} de {formatBRL(i.valorTotal)}
           </p>
         </div>
       ))}

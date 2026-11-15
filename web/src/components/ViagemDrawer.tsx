@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { formatBRL, formatDataCivil, hojeLocalISO } from '../lib/format';
 import type { ClienteListItem } from '../types/cliente';
 import type {
   Atracao,
@@ -56,13 +57,8 @@ const TRANSICOES_VALIDAS: Record<ViagemStatus, ViagemStatus[]> = {
   cancelada: [],
 };
 
-function formatMoeda(valor: string | null) {
-  return valor == null ? '—' : `R$ ${Number(valor).toFixed(2)}`;
-}
-
-function formatData(valor: string | null) {
-  return valor ? new Date(valor).toLocaleDateString('pt-BR') : '—';
-}
+const formatMoeda = formatBRL;
+const formatData = formatDataCivil;
 
 interface Props {
   viagemId: string | null;
@@ -1091,7 +1087,7 @@ function InscricaoCard({
         onClick={alternarPagamentos}
         className="text-xs text-zinc-600 hover:text-zinc-900"
       >
-        R$ {Number(inscricao.valorPago).toFixed(2)} de R$ {Number(inscricao.valorTotal).toFixed(2)} —{' '}
+        {formatBRL(inscricao.valorPago)} de {formatBRL(inscricao.valorTotal)} —{' '}
         {pagamentosAbertos ? 'ocultar pagamentos' : 'ver pagamentos'}
       </button>
 
@@ -1106,8 +1102,8 @@ function InscricaoCard({
               {pagamentos.map((p) => (
                 <li key={p.id} className="flex items-center justify-between text-xs text-zinc-600">
                   <span>
-                    {new Date(p.dataPagamento).toLocaleDateString('pt-BR')} — {p.forma}
-                    {p.parcelas && p.parcelas > 1 ? ` (${p.parcelas}x)` : ''} — R$ {Number(p.valor).toFixed(2)}
+                    {formatDataCivil(p.dataPagamento)} — {p.forma}
+                    {p.parcelas && p.parcelas > 1 ? ` (${p.parcelas}x)` : ''} — {formatBRL(p.valor)}
                   </span>
                   {user?.papel === 'admin' && (
                     <button
@@ -1224,7 +1220,7 @@ function FormPagamento({
   const [valor, setValor] = useState(saldo > 0 ? saldo.toFixed(2) : '');
   const [forma, setForma] = useState(formasPagamento[0] ?? '');
   const [parcelas, setParcelas] = useState('');
-  const [dataPagamento, setDataPagamento] = useState(new Date().toISOString().slice(0, 10));
+  const [dataPagamento, setDataPagamento] = useState(hojeLocalISO);
   const [ajusteFinanceiro, setAjusteFinanceiro] = useState(false);
   const [observacoes, setObservacoes] = useState('');
   const [erro, setErro] = useState('');
@@ -1266,13 +1262,19 @@ function FormPagamento({
               step="0.01"
               required
               value={valor}
-              onChange={(e) => setValor(e.target.value)}
+              onChange={(e) => {
+                setValor(e.target.value);
+                setErro('');
+              }}
             />
           </div>
           {saldo > 0 && (
             <button
               type="button"
-              onClick={() => setValor(saldo.toFixed(2))}
+              onClick={() => {
+                setValor(saldo.toFixed(2));
+                setErro('');
+              }}
               className="text-xs font-semibold text-amber-600 hover:text-amber-700 pb-2"
             >
               Quitar saldo
@@ -1311,14 +1313,17 @@ function FormPagamento({
       {excedeSaldo && (
         <div className="text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 space-y-2">
           <p className="text-amber-700">
-            Esse valor passa do saldo restante (R$ {saldo.toFixed(2)}). Só é aceito como ajuste financeiro,
+            Esse valor passa do saldo restante ({formatBRL(saldo)}). Só é aceito como ajuste financeiro,
             registrado nas observações.
           </p>
           <label className="flex items-center gap-2 text-zinc-600">
             <input
               type="checkbox"
               checked={ajusteFinanceiro}
-              onChange={(e) => setAjusteFinanceiro(e.target.checked)}
+              onChange={(e) => {
+                setAjusteFinanceiro(e.target.checked);
+                setErro('');
+              }}
             />
             Confirmar ajuste financeiro
           </label>
