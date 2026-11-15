@@ -121,3 +121,53 @@ export interface DespesasDaViagem {
   total: string;
   totalPorCategoria: { categoria: string; total: string }[];
 }
+
+export interface FinanceiroViagem {
+  receitaPrevista: string;
+  recebido: string;
+  aReceber: string;
+  despesas: string;
+  aDevolver: string;
+  resultadoAtual: string;
+  resultadoPrevisto: string;
+  margemPrevista: number | null;
+}
+
+export interface Dashboard {
+  hoje: string;
+  aReceberNoMes: string;
+  proximasViagens: {
+    id: string;
+    nome: string;
+    destinoCidade: string;
+    destinoUf: string;
+    dataInicio: string;
+    dataFim: string;
+    status: ViagemStatus;
+    capacidade: number;
+    pessoasConfirmadas: number;
+    recebido: string;
+    aReceber: string;
+  }[];
+  pendencias: {
+    inscricaoId: string;
+    viagemId: string;
+    viagemNome: string;
+    dataInicio: string;
+    clienteId: string;
+    clienteNome: string;
+    clienteTelefone: string;
+    valorTotal: string;
+    valorPago: string;
+    saldo: string;
+  }[];
+  resultadoPorViagem: {
+    viagemId: string;
+    nome: string;
+    dataInicio: string;
+    recebido: string;
+    despesas: string;
+    resultadoAtual: string;
+    resultadoPrevisto: string;
+  }[];
+}

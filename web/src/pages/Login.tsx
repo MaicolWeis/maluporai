@@ -15,7 +15,7 @@ export function Login() {
   const { setSession } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: Location })?.from?.pathname ?? '/viagens';
+  const from = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard';
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
