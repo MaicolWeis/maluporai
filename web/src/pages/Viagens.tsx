@@ -6,6 +6,7 @@ import { Pill } from '../components/Pill';
 import { RoadStrip } from '../components/RoadStrip';
 import { ViagemDrawer } from '../components/ViagemDrawer';
 import { api } from '../lib/api';
+import { formatBRL, formatDataCivil } from '../lib/format';
 import type { ViagemListItem, ViagemStatus } from '../types/viagem';
 
 const STATUS_LABEL: Record<ViagemStatus, string> = {
@@ -24,14 +25,10 @@ const STATUS_PILL: Record<ViagemStatus, string> = {
   cancelada: 'bg-red-100 text-red-700 border border-red-200',
 };
 
-function formatMoeda(valor: string) {
-  return `R$ ${Number(valor).toFixed(2)}`;
-}
+const formatMoeda = formatBRL;
 
 function formatPeriodo(dataInicio: string, dataFim: string) {
-  const inicio = new Date(dataInicio).toLocaleDateString('pt-BR');
-  const fim = new Date(dataFim).toLocaleDateString('pt-BR');
-  return `${inicio} — ${fim}`;
+  return `${formatDataCivil(dataInicio)} — ${formatDataCivil(dataFim)}`;
 }
 
 export function Viagens() {
