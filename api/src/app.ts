@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { env } from './config/env.js';
 import { despesasPorViagemRouter, despesasRouter } from './routes/despesas.routes.js';
+import { dashboardRouter, financeiroViagemRouter } from './routes/financeiro.routes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -40,6 +41,8 @@ export function createApp() {
   app.use('/viagens', viagensRouter);
   app.use('/viagens/:viagemId/inscricoes', inscricoesPorViagemRouter);
   app.use('/viagens/:viagemId/despesas', despesasPorViagemRouter);
+  app.use('/viagens/:viagemId/financeiro', financeiroViagemRouter);
+  app.use('/dashboard', dashboardRouter);
   app.use('/inscricoes/:inscricaoId/pagamentos', pagamentosPorInscricaoRouter);
   app.use('/inscricoes', inscricoesRouter);
   app.use('/pagamentos', pagamentosRouter);

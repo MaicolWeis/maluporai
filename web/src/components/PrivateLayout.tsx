@@ -24,6 +24,14 @@ export function PrivateLayout() {
         <RoadStrip />
         <nav className="p-3 space-y-1 text-sm font-semibold flex-1">
           <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `block px-3 py-2 rounded-md ${isActive ? 'bg-amber-400 text-zinc-900' : 'text-stone-300 hover:text-white'}`
+            }
+          >
+            Visão geral
+          </NavLink>
+          <NavLink
             to="/viagens"
             className={({ isActive }) =>
               `block px-3 py-2 rounded-md ${isActive ? 'bg-amber-400 text-zinc-900' : 'text-stone-300 hover:text-white'}`

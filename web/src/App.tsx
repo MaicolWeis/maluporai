@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ConfiguracoesLayout } from './components/ConfiguracoesLayout';
 import { PrivateLayout } from './components/PrivateLayout';
@@ -13,6 +14,9 @@ import { RedefinirSenha } from './pages/RedefinirSenha';
 import { Signup } from './pages/Signup';
 import { Usuarios } from './pages/Usuarios';
 import { Viagens } from './pages/Viagens';
+
+// recharts pesa ~400 kB: o dashboard é carregado sob demanda.
+const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -48,6 +52,14 @@ export default function App() {
           </PrivateRoute>
         }
       >
+        <Route
+          path="dashboard"
+          element={
+            <Suspense fallback={<p className="text-sm text-zinc-500">Carregando…</p>}>
+              <Dashboard />
+            </Suspense>
+          }
+        />
         <Route path="viagens" element={<Viagens />} />
         <Route path="clientes" element={<Clientes />} />
         <Route
@@ -64,7 +76,7 @@ export default function App() {
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="privacidade" element={<Privacidade />} />
         </Route>
-        <Route path="*" element={<Navigate to="viagens" replace />} />
+        <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Route>
     </Routes>
   );

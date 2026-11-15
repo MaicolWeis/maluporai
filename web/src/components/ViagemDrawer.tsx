@@ -17,6 +17,7 @@ import type {
   ViagemStatus,
 } from '../types/viagem';
 import { AbaDespesas } from './AbaDespesas';
+import { AbaFinanceiro } from './AbaFinanceiro';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
@@ -25,7 +26,7 @@ import { NovoClienteModal } from './NovoClienteModal';
 import { Pill } from './Pill';
 import { Select } from './Select';
 
-type Aba = 'resumo' | 'clientes' | 'despesas' | 'financeiro';
+export type Aba = 'resumo' | 'clientes' | 'despesas' | 'financeiro';
 
 const ABAS: { id: Aba; label: string }[] = [
   { id: 'resumo', label: 'Resumo' },
@@ -65,9 +66,11 @@ interface Props {
   viagemId: string | null;
   onFechar: () => void;
   onAtualizado: () => void;
+  /** Aba aberta ao abrir o drawer (ex.: atalho do dashboard pra aba Clientes). */
+  abaInicial?: Aba;
 }
 
-export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
+export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'resumo' }: Props) {
   const [aba, setAba] = useState<Aba>('resumo');
   const [viagem, setViagem] = useState<ViagemDetalhe | null>(null);
   const [carregando, setCarregando] = useState(false);
@@ -88,7 +91,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
       setViagem(null);
       return;
     }
-    setAba('resumo');
+    setAba(abaInicial);
     setErroStatus('');
     setCarregando(true);
     carregar(viagemId).finally(() => setCarregando(false));
@@ -189,9 +192,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado }: Props) {
           {aba === 'resumo' && <AbaResumo viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'clientes' && <AbaClientes viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'despesas' && <AbaDespesas viagem={viagem} onAtualizado={recarregar} />}
-          {aba === 'financeiro' && (
-            <EmptyState titulo="Financeiro" descricao="O dashboard financeiro chega no P10." />
-          )}
+          {aba === 'financeiro' && <AbaFinanceiro viagemId={viagem.id} />}
         </div>
       )}
     </Drawer>
