@@ -67,8 +67,8 @@ export function ClienteDrawer({ clienteId, onFechar, onAtualizado }: Props) {
                 key={a.id}
                 type="button"
                 onClick={() => setAba(a.id)}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-                  aba === a.id ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                className={`px-3 h-9 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                  aba === a.id ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-900'
                 }`}
               >
                 {a.label}
@@ -192,7 +192,7 @@ function AbaDados({
               type="button"
               onClick={revelarCpf}
               disabled={revelando}
-              className="text-xs font-semibold text-amber-600 hover:text-amber-700 disabled:opacity-50"
+              className="text-xs font-semibold text-brand hover:text-brand-hover disabled:opacity-50"
             >
               {revelando ? 'Revelando…' : 'Revelar'}
             </button>
@@ -242,7 +242,7 @@ function AbaDados({
           value={form.observacoes}
           onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
           rows={3}
-          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
       </label>
       <label className="flex items-start gap-2 text-xs text-zinc-600">

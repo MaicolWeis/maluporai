@@ -1,6 +1,7 @@
-export function Pill({ children, cls = 'bg-stone-100 text-zinc-700 border border-stone-200' }: { children: React.ReactNode; cls?: string }) {
+// NSDS: pill de 20px, raio total, 11px/600, com borda.
+export function Pill({ children, cls = 'bg-slate-50 text-slate-600 border border-slate-200' }: { children: React.ReactNode; cls?: string }) {
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${cls}`}>
+    <span className={`inline-flex items-center h-5 px-2 rounded-full text-xs font-semibold whitespace-nowrap ${cls}`}>
       {children}
     </span>
   );

@@ -48,7 +48,7 @@ const STATUS_PILL: Record<ViagemStatus, string> = {
   planejamento: 'bg-stone-100 text-zinc-600 border border-stone-200',
   inscricoes: 'bg-amber-100 text-amber-700 border border-amber-200',
   confirmada: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  concluida: 'bg-zinc-900 text-amber-400',
+  concluida: 'bg-brand text-white',
   cancelada: 'bg-red-100 text-red-700 border border-red-200',
 };
 
@@ -153,7 +153,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
                 value=""
                 disabled={mudandoStatus}
                 onChange={(e) => mudarStatus(e.target.value as ViagemStatus)}
-                className="text-xs border border-stone-300 rounded-lg px-2 py-1 text-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
+                className="text-xs border border-stone-300 rounded-lg px-2 py-1 text-zinc-700 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand disabled:opacity-50"
               >
                 <option value="" disabled>
                   Mudar status
@@ -181,8 +181,8 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
                 key={a.id}
                 type="button"
                 onClick={() => setAba(a.id)}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-                  aba === a.id ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-500 hover:text-zinc-900'
+                className={`px-3 h-9 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                  aba === a.id ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-900'
                 }`}
               >
                 {a.label}
@@ -269,7 +269,7 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
           </span>
         </div>
         <div className="h-2 w-full bg-stone-200 rounded-full overflow-hidden">
-          <div className="h-full bg-amber-400" style={{ width: `${ocupacaoPct}%` }} />
+          <div className="h-full bg-brand" style={{ width: `${ocupacaoPct}%` }} />
         </div>
         <div className="flex gap-4 mt-3 text-xs">
           <span className="text-emerald-700 font-semibold">Recebido: {formatMoeda(viagem.agregados.totalRecebido)}</span>
@@ -354,7 +354,7 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
           rows={3}
-          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
       </label>
 
@@ -412,7 +412,7 @@ function Hospedagem({
         <button
           type="button"
           onClick={() => setMostrarForm((v) => !v)}
-          className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+          className="text-xs font-semibold text-brand hover:text-brand-hover"
         >
           {mostrarForm ? 'Cancelar' : '+ Adicionar hotel'}
         </button>
@@ -537,7 +537,7 @@ function AtracaoSecao({
         <button
           type="button"
           onClick={() => setMostrarForm((v) => !v)}
-          className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+          className="text-xs font-semibold text-brand hover:text-brand-hover"
         >
           {mostrarForm ? 'Cancelar' : '+ Adicionar atração'}
         </button>
@@ -638,7 +638,7 @@ function InclusosSecao({
         {inclusos.map((i) => (
           <span
             key={i.id}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-zinc-900 text-amber-400"
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-brand text-white"
           >
             {i.descricao}
             <button type="button" onClick={() => remover(i.id)} aria-label={`Remover ${i.descricao}`} className="hover:text-white">
@@ -659,13 +659,13 @@ function InclusosSecao({
             }
           }}
           placeholder="Ex.: café da manhã"
-          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
         <button
           type="button"
           onClick={adicionar}
           disabled={enviando}
-          className="px-3 rounded-lg border border-stone-300 text-zinc-600 hover:border-amber-400 hover:text-zinc-900 disabled:opacity-50"
+          className="px-3 rounded-lg border border-stone-300 text-zinc-600 hover:border-brand hover:text-zinc-900 disabled:opacity-50"
         >
           Adicionar
         </button>
@@ -739,7 +739,7 @@ function AbaClientes({ viagem, onAtualizado }: { viagem: ViagemDetalhe; onAtuali
           <button
             type="button"
             onClick={() => setMostrarForm((v) => !v)}
-            className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+            className="text-xs font-semibold text-brand hover:text-brand-hover"
           >
             {mostrarForm ? 'Cancelar' : '+ Inscrever cliente'}
           </button>
@@ -890,7 +890,7 @@ function FormInscricao({
           <button
             type="button"
             onClick={() => setModalNovoClienteAberto(true)}
-            className="mt-2 text-xs font-semibold text-amber-600 hover:text-amber-700"
+            className="mt-2 text-xs font-semibold text-brand hover:text-brand-hover"
           >
             + Cadastrar cliente novo
           </button>
@@ -1076,7 +1076,7 @@ function InscricaoCard({
         {inscricao.levaAcompanhante && <Pill>Acompanhante: {inscricao.nomeAcompanhante}</Pill>}
         {inscricao.seguroViagem && <Pill>Seguro</Pill>}
         {inscricao.formaPagamentoPredominante && (
-          <Pill cls="bg-zinc-900 text-amber-400">{inscricao.formaPagamentoPredominante}</Pill>
+          <Pill cls="bg-brand text-white">{inscricao.formaPagamentoPredominante}</Pill>
         )}
       </div>
 
@@ -1136,7 +1136,7 @@ function InscricaoCard({
             <button
               type="button"
               onClick={() => setMostrarFormPagamento(true)}
-              className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+              className="text-xs font-semibold text-brand hover:text-brand-hover"
             >
               + Registrar pagamento
             </button>
@@ -1159,7 +1159,7 @@ function InscricaoCard({
 
       {podeEditar && !editando && (
         <div className="flex gap-3 mt-2">
-          <button type="button" onClick={() => setEditando(true)} className="text-xs font-semibold text-amber-600 hover:text-amber-700">
+          <button type="button" onClick={() => setEditando(true)} className="text-xs font-semibold text-brand hover:text-brand-hover">
             Editar
           </button>
           <button type="button" onClick={cancelar} className="text-xs font-semibold text-red-600 hover:text-red-700">
@@ -1287,7 +1287,7 @@ function FormPagamento({
                 setValor(saldo.toFixed(2));
                 setErro('');
               }}
-              className="text-xs font-semibold text-amber-600 hover:text-amber-700 pb-2"
+              className="text-xs font-semibold text-brand hover:text-brand-hover pb-2"
             >
               Quitar saldo
             </button>
@@ -1348,7 +1348,7 @@ function FormPagamento({
           value={observacoes}
           onChange={(e) => setObservacoes(e.target.value)}
           rows={2}
-          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
       </label>
 

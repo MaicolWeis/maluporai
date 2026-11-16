@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { RoadStrip } from '../components/RoadStrip';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 
@@ -39,10 +38,9 @@ export function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
-        <RoadStrip />
         <form onSubmit={submit} className="p-6 space-y-4">
           <div>
-            <h1 className="text-2xl font-black">maluporai</h1>
+            <h1 className="text-xl font-bold tracking-tight text-brand">maluporai</h1>
             <p className="text-sm text-zinc-500">Gestão de viagens em grupo</p>
           </div>
           <Input
@@ -69,7 +67,7 @@ export function Login() {
             <Link to="/esqueci-senha" className="text-zinc-500 hover:text-zinc-900">
               Esqueci minha senha
             </Link>
-            <Link to="/signup" className="font-semibold text-amber-600 hover:text-amber-700">
+            <Link to="/signup" className="font-semibold text-brand hover:text-brand-hover">
               Criar conta
             </Link>
           </div>

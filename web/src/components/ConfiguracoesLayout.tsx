@@ -11,15 +11,18 @@ const ABAS = [
 export function ConfiguracoesLayout() {
   return (
     <div>
-      <h1 className="text-2xl font-black mb-6">Configurações</h1>
-      <div className="border-b border-stone-200 mb-6 flex gap-1">
+      <div className="mb-4">
+        <h1 className="text-base font-semibold text-slate-900">Configurações</h1>
+        <p className="text-xs text-slate-500">Empresa, preferências, usuários, privacidade e auditoria</p>
+      </div>
+      <div className="border-b border-slate-200 mb-4 flex gap-1 overflow-x-auto">
         {ABAS.map((aba) => (
           <NavLink
             key={aba.to}
             to={aba.to}
             className={({ isActive }) =>
-              `px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-                isActive ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-500 hover:text-zinc-900'
+              `px-3 h-9 inline-flex items-center text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
+                isActive ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-900'
               }`
             }
           >

@@ -29,14 +29,14 @@ export function ChipList({ label, valores, onChange }: Props) {
         {valores.map((valor) => (
           <span
             key={valor}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-zinc-900 text-amber-400"
+            className="flex items-center gap-1 h-6 px-2.5 rounded-full text-xs font-semibold bg-brand-soft text-brand-ink border border-brand-border"
           >
             {valor}
             <button
               type="button"
               onClick={() => remover(valor)}
               aria-label={`Remover ${valor}`}
-              className="hover:text-white"
+              className="hover:text-red-600"
             >
               <X size={12} />
             </button>
@@ -55,12 +55,12 @@ export function ChipList({ label, valores, onChange }: Props) {
             }
           }}
           placeholder="Adicionar…"
-          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
         <button
           type="button"
           onClick={adicionar}
-          className="px-3 rounded-lg border border-stone-300 text-zinc-600 hover:border-amber-400 hover:text-zinc-900"
+          className="px-3 rounded-lg border border-stone-300 text-zinc-600 hover:border-brand hover:text-zinc-900"
           aria-label="Adicionar"
         >
           <Plus size={16} />

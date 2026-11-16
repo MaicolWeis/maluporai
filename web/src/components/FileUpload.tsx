@@ -96,7 +96,7 @@ export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado
           processar(e.dataTransfer.files[0]);
         }}
         className={`flex items-center gap-3 border-2 border-dashed rounded-lg px-4 py-3 cursor-pointer transition-colors ${
-          arrastando ? 'border-amber-400 bg-amber-50' : 'border-stone-300 hover:border-amber-400'
+          arrastando ? 'border-brand bg-amber-50' : 'border-stone-300 hover:border-brand'
         }`}
       >
         {preview ? (
@@ -109,7 +109,7 @@ export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado
             <>
               Enviando… {progresso}%
               <div className="h-1 bg-stone-200 rounded mt-1 overflow-hidden">
-                <div className="h-full bg-amber-400" style={{ width: `${progresso}%` }} />
+                <div className="h-full bg-brand" style={{ width: `${progresso}%` }} />
               </div>
             </>
           ) : (

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { EmptyState } from '../components/EmptyState';
-import { RoadStrip } from '../components/RoadStrip';
 import { type Aba, ViagemDrawer } from '../components/ViagemDrawer';
 import { api } from '../lib/api';
 import { formatBRL, formatDataCivil } from '../lib/format';
@@ -40,11 +39,14 @@ export function Dashboard() {
   }));
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-black">Visão geral</h1>
+    <div className="space-y-6">
+      <div>
+          <h1 className="text-base font-semibold text-slate-900">Visão geral</h1>
+          <p className="text-xs text-slate-500">Resumo financeiro e próximas viagens</p>
+        </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Kpi titulo="A receber (viagens do mês)" valor={formatBRL(dados.aReceberNoMes)} cls="text-amber-600" />
+        <Kpi titulo="A receber (viagens do mês)" valor={formatBRL(dados.aReceberNoMes)} cls="text-brand" />
         <Kpi
           titulo="Pendências (viagens em até 30 dias)"
           valor={formatBRL(totalPendente)}
@@ -55,7 +57,7 @@ export function Dashboard() {
       </div>
 
       <section>
-        <h2 className="text-sm font-bold text-zinc-700 mb-3">Próximas viagens</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Próximas viagens</h2>
         {dados.proximasViagens.length === 0 ? (
           <EmptyState titulo="Nenhuma viagem futura" descricao="Cadastre uma viagem na aba Viagens." />
         ) : (
@@ -68,11 +70,10 @@ export function Dashboard() {
                   key={v.id}
                   type="button"
                   onClick={() => setDrawer({ viagemId: v.id, aba: 'resumo' })}
-                  className="text-left bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-colors"
+                  className="text-left bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden hover:border-brand transition-colors"
                 >
-                  <RoadStrip />
                   <div className="p-4">
-                    <p className="font-black text-zinc-900">{v.nome}</p>
+                    <p className="font-semibold text-zinc-900">{v.nome}</p>
                     <p className="text-xs text-zinc-500">
                       {v.destinoCidade}/{v.destinoUf} · {formatDataCivil(v.dataInicio)}{' '}
                       <span className="text-zinc-400">({dias === 0 ? 'hoje' : `em ${dias} dia${dias > 1 ? 's' : ''}`})</span>
@@ -85,13 +86,13 @@ export function Dashboard() {
                         </span>
                       </div>
                       <div className="h-2 w-full bg-stone-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-400" style={{ width: `${pct}%` }} />
+                        <div className="h-full bg-brand" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                     <div className="flex gap-4 text-xs">
                       <span className="text-emerald-700 font-semibold">{formatBRL(v.recebido)} recebido</span>
                       {Number(v.aReceber) > 0 && (
-                        <span className="text-amber-600 font-semibold">{formatBRL(v.aReceber)} a receber</span>
+                        <span className="text-brand font-semibold">{formatBRL(v.aReceber)} a receber</span>
                       )}
                     </div>
                   </div>
@@ -103,11 +104,11 @@ export function Dashboard() {
       </section>
 
       <section>
-        <h2 className="text-sm font-bold text-zinc-700 mb-3">Pagamentos pendentes — viagens nos próximos 30 dias</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Pagamentos pendentes — viagens nos próximos 30 dias</h2>
         {dados.pendencias.length === 0 ? (
           <p className="text-sm text-zinc-400">Nenhuma pendência. 🎉</p>
         ) : (
-          <ul className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-200">
+          <ul className="bg-white border border-stone-200 rounded-xl shadow-card divide-y divide-stone-200">
             {dados.pendencias.map((p) => (
               <li key={p.inscricaoId}>
                 <button
@@ -135,11 +136,11 @@ export function Dashboard() {
       </section>
 
       <section>
-        <h2 className="text-sm font-bold text-zinc-700 mb-3">Resultado por viagem</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Resultado por viagem</h2>
         {grafico.length === 0 ? (
           <p className="text-sm text-zinc-400">Sem viagens ainda.</p>
         ) : (
-          <div className="bg-white border border-stone-200 rounded-xl p-4 h-80">
+          <div className="bg-white border border-stone-200 rounded-xl shadow-card p-4 h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={grafico} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
@@ -149,7 +150,7 @@ export function Dashboard() {
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="Recebido" fill="#059669" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                 <Bar dataKey="Despesas" fill="#dc2626" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                <Bar dataKey="Resultado" fill="#18181b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="Resultado" fill="#1C69D4" radius={[4, 4, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -168,9 +169,9 @@ export function Dashboard() {
 
 function Kpi({ titulo, valor, detalhe, cls }: { titulo: string; valor: string; detalhe?: string; cls: string }) {
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-4">
+    <div className="bg-white border border-stone-200 rounded-xl shadow-card p-4">
       <p className="text-xs text-zinc-500">{titulo}</p>
-      <p className={`text-2xl font-black mt-1 ${cls}`}>{valor}</p>
+      <p className={`text-xl font-semibold font-mono mt-1 tracking-tight ${cls}`}>{valor}</p>
       {detalhe && <p className="text-xs text-zinc-400 mt-1">{detalhe}</p>}
     </div>
   );

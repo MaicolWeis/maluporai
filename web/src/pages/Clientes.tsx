@@ -34,7 +34,10 @@ export function Clientes() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black">Clientes</h1>
+        <div>
+          <h1 className="text-base font-semibold text-slate-900">Clientes</h1>
+          <p className="text-xs text-slate-500">Cadastro de viajantes e privacidade (LGPD)</p>
+        </div>
         <Button onClick={() => setModalAberto(true)}>Novo cliente</Button>
       </div>
 
@@ -55,9 +58,9 @@ export function Clientes() {
           descricao="Cadastre o primeiro cliente pra começar a organizar as viagens."
         />
       ) : (
-        <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-stone-50 text-left text-xs text-zinc-500 uppercase">
+            <thead className="bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-4 py-3 font-semibold">Nome</th>
                 <th className="px-4 py-3 font-semibold">Telefone</th>

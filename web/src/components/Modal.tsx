@@ -1,7 +1,6 @@
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { RoadStrip } from './RoadStrip';
 
 interface Props {
   titulo: string;
@@ -21,15 +20,13 @@ export function Modal({ titulo, aberto, onFechar, children }: Props) {
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50" onClick={onFechar}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40" onClick={onFechar}>
       <div
-        className="w-full max-w-md bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden"
+        className="w-full max-w-md bg-white rounded-xl shadow-pop border border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <RoadStrip />
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-black">{titulo}</h2>
+        <div className="px-5 py-3.5 flex items-center justify-between border-b border-slate-200">
+            <h2 className="text-base font-semibold text-slate-900">{titulo}</h2>
             <button
               type="button"
               onClick={onFechar}
@@ -38,9 +35,8 @@ export function Modal({ titulo, aberto, onFechar, children }: Props) {
             >
               <X size={18} />
             </button>
-          </div>
-          {children}
         </div>
+        <div className="p-5 space-y-4">{children}</div>
       </div>
     </div>
   );

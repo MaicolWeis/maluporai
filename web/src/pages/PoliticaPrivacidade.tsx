@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { RoadStrip } from '../components/RoadStrip';
 
 // Dados do operador da plataforma e do canal do encarregado (DPO).
 // Preencher antes do go-live com os dados reais.
@@ -17,11 +16,10 @@ const SUBPROCESSADORES = [
 export function PoliticaPrivacidade() {
   return (
     <div className="min-h-screen bg-stone-100 py-10 px-4">
-      <article className="max-w-3xl mx-auto bg-white rounded-xl border border-stone-200 overflow-hidden">
-        <RoadStrip />
+      <article className="max-w-3xl mx-auto bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
         <div className="p-8 space-y-6 text-sm text-zinc-700 leading-relaxed">
           <header>
-            <h1 className="text-2xl font-black text-zinc-900">Política de Privacidade</h1>
+            <h1 className="text-2xl font-semibold text-zinc-900">Política de Privacidade</h1>
             <p className="text-xs text-zinc-400 mt-1">Atualizada em {ATUALIZADA_EM}</p>
           </header>
 
@@ -88,7 +86,7 @@ export function PoliticaPrivacidade() {
             <h2 className="font-bold text-zinc-900">Com quem compartilhamos (subprocessadores)</h2>
             <p>Usamos estes fornecedores para operar a plataforma:</p>
             <table className="w-full text-xs border border-stone-200 rounded">
-              <thead className="bg-stone-50 text-zinc-500">
+              <thead className="bg-slate-50 text-slate-500">
                 <tr>
                   <th className="text-left p-2">Fornecedor</th>
                   <th className="text-left p-2">Finalidade</th>
@@ -117,7 +115,7 @@ export function PoliticaPrivacidade() {
               Você pode pedir confirmação, acesso, correção, anonimização, portabilidade ou eliminação dos seus dados
               (LGPD, art. 18). Viajantes: falem com o organizador da sua viagem. Usuários da plataforma e dúvidas
               gerais: escreva para o encarregado de dados em{' '}
-              <a className="font-semibold text-amber-600" href={`mailto:${CONTATO_ENCARREGADO}`}>
+              <a className="font-semibold text-brand" href={`mailto:${CONTATO_ENCARREGADO}`}>
                 {CONTATO_ENCARREGADO}
               </a>
               .
@@ -125,7 +123,7 @@ export function PoliticaPrivacidade() {
           </section>
 
           <footer className="pt-4 border-t border-stone-200">
-            <Link to="/login" className="text-sm font-semibold text-amber-600 hover:text-amber-700">
+            <Link to="/login" className="text-sm font-semibold text-brand hover:text-brand-hover">
               Voltar ao maluporai
             </Link>
           </footer>

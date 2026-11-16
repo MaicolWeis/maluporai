@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { RoadStrip } from '../components/RoadStrip';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 
@@ -77,10 +76,9 @@ export function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
-        <RoadStrip />
         <form onSubmit={submit} className="p-6 space-y-4">
           <div>
-            <h1 className="text-xl font-black">Criar conta</h1>
+            <h1 className="text-xl font-semibold">Criar conta</h1>
             <p className="text-xs text-zinc-500">Etapa {etapa} de 2 — {etapa === 1 ? 'dados da empresa' : 'usuário administrador'}</p>
           </div>
 
@@ -130,7 +128,7 @@ export function Signup() {
                 />
                 <span>
                   Li e aceito os Termos de Uso e a{' '}
-                  <Link to="/privacidade" target="_blank" className="font-semibold text-amber-600 hover:text-amber-700">
+                  <Link to="/privacidade" target="_blank" className="font-semibold text-brand hover:text-brand-hover">
                     Política de Privacidade
                   </Link>
                   . Sua empresa é a controladora dos dados dos seus clientes; o maluporai atua como operador.
@@ -149,7 +147,7 @@ export function Signup() {
             </>
           )}
 
-          <Link to="/login" className="block text-center text-sm font-semibold text-amber-600 hover:text-amber-700">
+          <Link to="/login" className="block text-center text-sm font-semibold text-brand hover:text-brand-hover">
             Voltar para o login
           </Link>
         </form>
