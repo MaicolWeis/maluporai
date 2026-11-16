@@ -58,7 +58,7 @@ function toInscricaoDTO(inscricao: {
   valorTotal: Prisma.Decimal;
   embarcadoEm: Date | null;
   createdAt: Date;
-  cliente: { id: string; nome: string; telefone: string };
+  cliente: { id: string; nome: string; telefone: string; motoMarca: string | null; motoModelo: string | null };
   pagamentos: { valor: Prisma.Decimal; forma: string }[];
 }) {
   const valorPago = somarPagamentos(inscricao.pagamentos);

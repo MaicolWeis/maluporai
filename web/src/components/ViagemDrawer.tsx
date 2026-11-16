@@ -1026,6 +1026,11 @@ function InscricaoCard({
           <p className="font-semibold text-sm text-zinc-900">{inscricao.cliente.nome}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-xs text-zinc-500">{inscricao.cliente.telefone}</p>
+            {(inscricao.cliente.motoMarca || inscricao.cliente.motoModelo) && (
+              <span className="text-xs text-zinc-500">
+                · 🏍 {[inscricao.cliente.motoMarca, inscricao.cliente.motoModelo].filter(Boolean).join(' ')}
+              </span>
+            )}
             <ContatoAcoes telefone={inscricao.cliente.telefone} nome={inscricao.cliente.nome} />
           </div>
         </div>

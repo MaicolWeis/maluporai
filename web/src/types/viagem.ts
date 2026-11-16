@@ -56,7 +56,7 @@ export type StatusPagamento = 'pago' | 'parcial' | 'pendente';
 export interface InscricaoItem {
   id: string;
   status: InscricaoStatus;
-  cliente: { id: string; nome: string; telefone: string };
+  cliente: { id: string; nome: string; telefone: string; motoMarca: string | null; motoModelo: string | null };
   levaAcompanhante: boolean;
   nomeAcompanhante: string | null;
   docAcompanhante: string | null;

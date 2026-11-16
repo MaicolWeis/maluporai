@@ -30,7 +30,14 @@ export const criarClienteSchema = z.object({
     .toUpperCase()
     .regex(/^[A-Z]{2}$/, 'País inválido')
     .optional(),
-  dataNascimento: z.coerce.date().optional(),
+  dataNascimento: z.coerce
+    .date()
+    .refine((d) => d <= new Date() && d.getUTCFullYear() >= 1900, { message: 'Data de nascimento inválida' })
+    .nullable()
+    .optional(),
+  // Moto do cliente (opcional). null limpa na edição.
+  motoMarca: z.string().trim().min(1).max(60).nullable().optional(),
+  motoModelo: z.string().trim().min(1).max(80).nullable().optional(),
   contatoEmergenciaNome: z.string().trim().min(1).optional(),
   contatoEmergenciaTelefone: z.string().trim().min(8).optional(),
   observacoes: z.string().optional(),

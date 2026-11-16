@@ -9,6 +9,8 @@ const LISTA_SELECT = {
   cidade: true,
   uf: true,
   pais: true,
+  motoMarca: true,
+  motoModelo: true,
   consentimentoMarketing: true,
   anonimizadoEm: true,
   createdAt: true,
@@ -83,7 +85,9 @@ interface CreateClienteInput {
   cidade?: string;
   uf?: string | null;
   pais?: string;
-  dataNascimento?: Date;
+  motoMarca?: string | null;
+  motoModelo?: string | null;
+  dataNascimento?: Date | null;
   contatoEmergenciaNome?: string;
   contatoEmergenciaTelefone?: string;
   observacoes?: string;
@@ -106,7 +110,9 @@ interface UpdateClienteInput {
   cidade?: string;
   uf?: string | null;
   pais?: string;
-  dataNascimento?: Date;
+  motoMarca?: string | null;
+  motoModelo?: string | null;
+  dataNascimento?: Date | null;
   contatoEmergenciaNome?: string;
   contatoEmergenciaTelefone?: string;
   observacoes?: string;

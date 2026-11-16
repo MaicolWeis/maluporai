@@ -6,6 +6,8 @@ import { formatBRL } from '../lib/format';
 import type { ClienteDetalhe, InscricaoResumo } from '../types/cliente';
 import { Button } from './Button';
 import { CamposLocalidade } from './CamposLocalidade';
+import { CamposMoto } from './CamposMoto';
+import { hojeLocalISO } from '../lib/format';
 import { ContatoAcoes } from './ContatoAcoes';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
@@ -116,6 +118,8 @@ function AbaDados({
     uf: cliente.uf ?? '',
     pais: cliente.pais ?? 'BR',
     dataNascimento: cliente.dataNascimento?.slice(0, 10) ?? '',
+    motoMarca: cliente.motoMarca ?? '',
+    motoModelo: cliente.motoModelo ?? '',
     contatoEmergenciaNome: cliente.contatoEmergenciaNome ?? '',
     contatoEmergenciaTelefone: cliente.contatoEmergenciaTelefone ?? '',
     observacoes: cliente.observacoes ?? '',
@@ -154,7 +158,9 @@ function AbaDados({
         cidade: form.cidade.trim() || undefined,
         uf: form.uf.trim() || null,
         pais: form.pais,
-        dataNascimento: form.dataNascimento || undefined,
+        dataNascimento: form.dataNascimento || null,
+        motoMarca: form.motoMarca.trim() || null,
+        motoModelo: form.motoModelo.trim() || null,
         contatoEmergenciaNome: form.contatoEmergenciaNome.trim() || undefined,
         contatoEmergenciaTelefone: form.contatoEmergenciaTelefone.trim() || undefined,
         observacoes: form.observacoes.trim() || undefined,
@@ -227,8 +233,15 @@ function AbaDados({
       <Input
         label="Data de nascimento"
         type="date"
+        min="1900-01-01"
+        max={hojeLocalISO()}
         value={form.dataNascimento}
         onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })}
+      />
+      <CamposMoto
+        marca={form.motoMarca}
+        modelo={form.motoModelo}
+        onChange={({ marca, modelo }) => setForm({ ...form, motoMarca: marca, motoModelo: modelo })}
       />
       <Input
         label="Contato de emergência — nome"
