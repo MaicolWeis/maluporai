@@ -33,7 +33,7 @@ class SupabaseStorageDriver implements StorageDriver {
     const res = await fetch(`${this.baseUrl}/storage/v1/object/${bucket}/${path}`, {
       method: 'POST',
       headers: this.headers({ 'Content-Type': contentType, 'x-upsert': 'false' }),
-      body: conteudo,
+      body: new Uint8Array(conteudo),
     });
     if (!res.ok) {
       logger.error({ status: res.status, bucket }, 'Falha no upload ao Supabase Storage');
