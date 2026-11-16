@@ -176,6 +176,13 @@ export async function atualizarViagem(id: string, input: AtualizarViagemInput, a
   const existente = await findViagemByIdOrNull(id);
   if (!existente) throw notFound();
 
+  // Edição parcial: compara a data enviada com a que já está salva.
+  const inicio = input.dataInicio ?? existente.dataInicio;
+  const fim = input.dataFim ?? existente.dataFim;
+  if (fim < inicio) {
+    throw new AppError(400, 'DATAS_INVALIDAS', 'A data final não pode ser anterior à data de início');
+  }
+
   await updateViagem(id, input);
   await auditarViagem('update', id, ator, meta, { ...input });
   return obterViagem(id);
@@ -286,6 +293,11 @@ export async function atualizarHotel(viagemId: string, hotelId: string, input: A
   await garantirViagem(viagemId);
   const hotel = await findHotelByIdOrNull(hotelId);
   if (!hotel || hotel.viagemId !== viagemId) throw notFound('Hotel não encontrado');
+  const checkIn = input.checkIn ?? hotel.checkIn;
+  const checkOut = input.checkOut ?? hotel.checkOut;
+  if (checkIn && checkOut && checkOut < checkIn) {
+    throw new AppError(400, 'DATAS_INVALIDAS', 'O check-out não pode ser anterior ao check-in');
+  }
   const atualizado = await updateHotel(hotelId, input);
   await auditarSub('update', 'viagem_hotel', hotelId, viagemId, ator, meta, { ...input });
   return atualizado;

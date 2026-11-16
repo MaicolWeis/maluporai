@@ -95,6 +95,8 @@ export function NovaViagemModal({ aberto, onFechar, onCriada }: Props) {
               type="date"
               required
               value={form.dataFim}
+              min={form.dataInicio || undefined}
+              error={form.dataInicio && form.dataFim && form.dataFim < form.dataInicio ? 'Deve ser igual ou posterior à data de início' : undefined}
               onChange={(e) => setForm({ ...form, dataFim: e.target.value })}
             />
           </div>
