@@ -57,7 +57,7 @@ export function Viagens() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-base font-semibold text-slate-900">Viagens</h1>
           <p className="text-xs text-slate-500">Planejamento, inscrições e financeiro de cada viagem</p>
@@ -66,7 +66,7 @@ export function Viagens() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-card p-3 mb-4 flex flex-wrap items-end gap-3">
-        <div className="w-48">
+        <div className="w-full sm:w-48">
           <Select
             label="Status"
             value={filtros.status}
@@ -81,10 +81,10 @@ export function Viagens() {
             ))}
           </Select>
         </div>
-        <div className="w-40">
+        <div className="flex-1 min-w-[140px] sm:flex-none sm:w-40">
           <Input label="Viagem de" type="date" value={filtros.de} onChange={(e) => setFiltros({ ...filtros, de: e.target.value })} />
         </div>
-        <div className="w-40">
+        <div className="flex-1 min-w-[140px] sm:flex-none sm:w-40">
           <Input
             label="até"
             type="date"

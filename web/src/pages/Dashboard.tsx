@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ContatoAcoes } from '../components/ContatoAcoes';
 import { EmptyState } from '../components/EmptyState';
 import { type Aba, ViagemDrawer } from '../components/ViagemDrawer';
 import { api } from '../lib/api';
@@ -110,11 +111,11 @@ export function Dashboard() {
         ) : (
           <ul className="bg-white border border-stone-200 rounded-xl shadow-card divide-y divide-stone-200">
             {dados.pendencias.map((p) => (
-              <li key={p.inscricaoId}>
+              <li key={p.inscricaoId} className="flex items-center gap-2 pr-3">
                 <button
                   type="button"
                   onClick={() => setDrawer({ viagemId: p.viagemId, aba: 'clientes' })}
-                  className="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-stone-50"
+                  className="flex-1 min-w-0 text-left flex items-center gap-3 px-4 py-3 hover:bg-stone-50"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-zinc-900 truncate">{p.clienteNome}</p>
@@ -129,6 +130,7 @@ export function Dashboard() {
                     </p>
                   </div>
                 </button>
+                <ContatoAcoes telefone={p.clienteTelefone} nome={p.clienteNome} />
               </li>
             ))}
           </ul>

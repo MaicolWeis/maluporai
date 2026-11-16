@@ -17,7 +17,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({ variant = 'primary', className = '', ...props }: Props) {
   return (
     <button
-      className={`h-9 px-4 rounded-md text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 ${variants[variant]} ${className}`}
+      className={`h-11 md:h-9 px-4 rounded-md text-sm md:text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 ${variants[variant]} ${className}`}
       {...props}
     />
   );

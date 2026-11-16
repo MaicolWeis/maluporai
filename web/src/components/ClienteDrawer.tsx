@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { formatBRL } from '../lib/format';
 import type { ClienteDetalhe, InscricaoResumo } from '../types/cliente';
 import { Button } from './Button';
+import { ContatoAcoes } from './ContatoAcoes';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
 import { Input } from './Input';
@@ -61,7 +62,7 @@ export function ClienteDrawer({ clienteId, onFechar, onAtualizado }: Props) {
         <p className="text-sm text-zinc-500">Carregando…</p>
       ) : (
         <div>
-          <div className="flex gap-1 border-b border-stone-200 mb-6">
+          <div className="flex gap-1 border-b border-stone-200 mb-6 overflow-x-auto -mx-1 px-1">
             {ABAS.map((a) => (
               <button
                 key={a.id}
@@ -176,12 +177,20 @@ function AbaDados({
   return (
     <form onSubmit={salvar} className="space-y-4">
       <Input label="Nome" required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-      <Input
-        label="Telefone"
-        required
-        value={form.telefone}
-        onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-      />
+      <div className="flex items-end gap-2">
+        <div className="flex-1">
+          <Input
+            label="Telefone"
+            required
+            type="tel"
+            value={form.telefone}
+            onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+          />
+        </div>
+        <div className="pb-1.5">
+          <ContatoAcoes telefone={form.telefone} nome={form.nome} />
+        </div>
+      </div>
 
       <div>
         <p className="text-xs text-zinc-500 mb-1">CPF</p>
@@ -231,18 +240,26 @@ function AbaDados({
         value={form.contatoEmergenciaNome}
         onChange={(e) => setForm({ ...form, contatoEmergenciaNome: e.target.value })}
       />
-      <Input
-        label="Contato de emergência — telefone"
-        value={form.contatoEmergenciaTelefone}
-        onChange={(e) => setForm({ ...form, contatoEmergenciaTelefone: e.target.value })}
-      />
+      <div className="flex items-end gap-2">
+        <div className="flex-1">
+          <Input
+            label="Contato de emergência — telefone"
+            type="tel"
+            value={form.contatoEmergenciaTelefone}
+            onChange={(e) => setForm({ ...form, contatoEmergenciaTelefone: e.target.value })}
+          />
+        </div>
+        <div className="pb-1.5">
+          <ContatoAcoes telefone={form.contatoEmergenciaTelefone} nome={form.contatoEmergenciaNome || 'contato de emergência'} />
+        </div>
+      </div>
       <label className="block text-xs text-zinc-500">
         Observações
         <textarea
           value={form.observacoes}
           onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
           rows={3}
-          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-base md:text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
       </label>
       <label className="flex items-start gap-2 text-xs text-zinc-600">

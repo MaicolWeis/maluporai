@@ -55,7 +55,7 @@ export function ChipList({ label, valores, onChange }: Props) {
             }
           }}
           placeholder="Adicionar…"
-          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
         <button
           type="button"

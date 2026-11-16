@@ -20,6 +20,7 @@ import type {
 import { AbaDespesas } from './AbaDespesas';
 import { AbaFinanceiro } from './AbaFinanceiro';
 import { ComprovanteInline } from './FileUpload';
+import { ContatoAcoes } from './ContatoAcoes';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
@@ -132,7 +133,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
                 value=""
                 disabled={mudandoStatus}
                 onChange={(e) => mudarStatus(e.target.value as ViagemStatus)}
-                className="h-8 text-xs border border-slate-200 rounded-md px-2 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand disabled:opacity-50"
+                className="h-8 text-base md:text-xs border border-slate-200 rounded-md px-2 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand disabled:opacity-50"
               >
                 <option value="" disabled>
                   Mudar status
@@ -154,7 +155,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
         <div>
           {erroStatus && <p className="text-red-600 text-xs mb-4">{erroStatus}</p>}
 
-          <div className="flex gap-1 border-b border-stone-200 mb-6">
+          <div className="flex gap-1 border-b border-stone-200 mb-6 overflow-x-auto -mx-1 px-1">
             {ABAS.map((a) => (
               <button
                 key={a.id}
@@ -329,7 +330,7 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
           rows={3}
-          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-base md:text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
       </label>
 
@@ -630,7 +631,7 @@ function InclusosSecao({
             }
           }}
           placeholder="Ex.: café da manhã"
-          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+          className="flex-1 border border-stone-300 rounded-lg px-3 py-1.5 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
         <button
           type="button"
@@ -1032,7 +1033,10 @@ function InscricaoCard({
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
           <p className="font-semibold text-sm text-zinc-900">{inscricao.cliente.nome}</p>
-          <p className="text-xs text-zinc-500">{inscricao.cliente.telefone}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-xs text-zinc-500">{inscricao.cliente.telefone}</p>
+            <ContatoAcoes telefone={inscricao.cliente.telefone} nome={inscricao.cliente.nome} />
+          </div>
         </div>
         <div className="flex flex-wrap gap-1 justify-end">
           {inscricao.status !== 'confirmada' && <Pill>{STATUS_INSCRICAO_LABEL[inscricao.status]}</Pill>}
@@ -1310,7 +1314,7 @@ function FormPagamento({
           value={observacoes}
           onChange={(e) => setObservacoes(e.target.value)}
           rows={2}
-          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+          className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-base md:text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
         />
       </label>
 

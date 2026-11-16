@@ -24,7 +24,7 @@ export function Drawer({ titulo, acessorio, aberto, onFechar, children }: Props)
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40" onClick={onFechar}>
       <div
-        className="h-full w-full max-w-lg bg-white shadow-pop border-l border-slate-200 flex flex-col"
+        className="h-[100dvh] w-full max-w-lg bg-white shadow-pop border-l border-slate-200 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200 flex-shrink-0 gap-3">
@@ -41,7 +41,7 @@ export function Drawer({ titulo, acessorio, aberto, onFechar, children }: Props)
             </button>
           </div>
         </div>
-        <div className="p-6 flex-1 overflow-y-auto">{children}</div>
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">{children}</div>
       </div>
     </div>
   );
