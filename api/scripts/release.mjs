@@ -53,7 +53,7 @@ if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
     const res = await fetch(`${base}/storage/v1/bucket`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        ...(SUPABASE_SERVICE_KEY.startsWith('eyJ') ? { Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } : {}),
         apikey: SUPABASE_SERVICE_KEY,
         'Content-Type': 'application/json',
       },
