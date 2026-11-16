@@ -25,8 +25,15 @@ class SupabaseStorageDriver implements StorageDriver {
     private readonly serviceKey: string,
   ) {}
 
-  private headers(extra: Record<string, string> = {}) {
-    return { Authorization: `Bearer ${this.serviceKey}`, apikey: this.serviceKey, ...extra };
+  /**
+   * Chave legada (service_role, JWT "eyJ…") vai também no Authorization; a
+   * chave secreta nova (sb_secret_…) não é JWT e vai só no header apikey.
+   */
+  private headers(extra: Record<string, string> = {}): Record<string, string> {
+    const auth: Record<string, string> = this.serviceKey.startsWith('eyJ')
+      ? { Authorization: `Bearer ${this.serviceKey}` }
+      : {};
+    return { apikey: this.serviceKey, ...auth, ...extra };
   }
 
   async upload(bucket: Bucket, path: string, conteudo: Buffer, contentType: string) {
