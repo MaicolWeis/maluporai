@@ -8,6 +8,7 @@ import { despesasPorViagemRouter, despesasRouter } from './routes/despesas.route
 import { dashboardRouter, financeiroViagemRouter } from './routes/financeiro.routes.js';
 import { uploadsRouter } from './routes/uploads.routes.js';
 import { auditoriaRouter } from './routes/auditoria.routes.js';
+import { origemVercel } from './middlewares/origemVercel.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -28,7 +29,15 @@ export function createApp() {
     app.set('trust proxy', env.TRUST_PROXY);
   }
 
+  // Antes de tudo: valida a origem (Vercel) e define o IP real do visitante,
+  // que o rate limit e a auditoria usam.
+  app.use(origemVercel);
   app.use(helmet());
+  // Respostas da API nunca devem ser cacheadas por CDN/navegador (dados autenticados).
+  app.use((_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
   app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());

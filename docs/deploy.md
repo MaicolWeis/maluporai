@@ -25,6 +25,7 @@ no Railway (rewrite em `web/vercel.json`). Assim o cookie de refresh
 | `FRONTEND_URL` | `https://<projeto>.vercel.app` |
 | `REFRESH_COOKIE_PATH` | `/api/auth` |
 | `TRUST_PROXY` | `2` (Vercel + borda do Railway) |
+| `ORIGIN_SECRET` | segredo (≥ 32 chars) **igual** ao da Vercel — com ele a API só aceita requisições vindas pelo proxy da Vercel e usa o IP real do visitante |
 | `SUPABASE_URL` | URL do projeto Supabase (só Storage) |
 | `SUPABASE_SERVICE_KEY` | service_role key do Supabase — **só no servidor**, nunca no front |
 | `EMAIL_DRIVER` | `console` no teste (links nos logs); `resend` no go-live |
@@ -36,7 +37,9 @@ O release cria os buckets privados `comprovantes` e `logos` no Supabase (idempot
 ## Vercel (web)
 
 1. *Add New Project* → `maluporai`, *Root Directory* `web` (framework Vite).
-2. Variável `VITE_API_URL` = `/api`.
+2. Variáveis `VITE_API_URL` = `/api` e `ORIGIN_SECRET` (mesmo valor do Railway; o `vercel.json` anexa como cabeçalho `x-origin-secret` em toda chamada a `/api`).
+
+Ordem para ativar/girar o segredo sem derrubar o app: 1) definir na Vercel e redeployar o front; 2) definir no Railway.
 
 ## Go-live (pendente, P12 completo)
 
