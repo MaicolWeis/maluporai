@@ -60,7 +60,7 @@ export function Empresa() {
   if (!form) return <p className="text-sm text-zinc-500">Carregando…</p>;
 
   return (
-    <form onSubmit={salvar} className="max-w-lg space-y-4 bg-white rounded-xl border border-stone-200 p-6">
+    <form onSubmit={salvar} className="max-w-lg space-y-4 bg-white rounded-xl border border-stone-200 shadow-card p-6">
       <Input label="Nome fantasia" required {...campo('nomeFantasia')} />
       <Input label="Razão social" {...campo('razaoSocial')} />
       <Input label="CNPJ/CPF" required {...campo('documento')} />

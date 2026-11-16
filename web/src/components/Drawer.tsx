@@ -1,7 +1,6 @@
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { RoadStrip } from './RoadStrip';
 
 interface Props {
   titulo: ReactNode;
@@ -23,14 +22,13 @@ export function Drawer({ titulo, acessorio, aberto, onFechar, children }: Props)
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-900/50" onClick={onFechar}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40" onClick={onFechar}>
       <div
-        className="h-full w-full max-w-lg bg-white shadow-lg border-l border-stone-200 flex flex-col"
+        className="h-full w-full max-w-lg bg-white shadow-pop border-l border-slate-200 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <RoadStrip />
-        <div className="p-5 flex items-center justify-between border-b border-stone-100 flex-shrink-0 gap-3">
-          <h2 className="text-lg font-black truncate">{titulo}</h2>
+        <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200 flex-shrink-0 gap-3">
+          <h2 className="text-base font-semibold text-slate-900 truncate">{titulo}</h2>
           <div className="flex items-center gap-3 flex-shrink-0">
             {acessorio}
             <button

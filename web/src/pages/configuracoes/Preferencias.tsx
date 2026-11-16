@@ -70,7 +70,7 @@ export function Preferencias() {
 
   return (
     <form onSubmit={salvar} className="max-w-lg space-y-6">
-      <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
+      <div className="bg-white rounded-xl border border-stone-200 shadow-card p-6 space-y-4">
         <div>
           <p className="text-xs text-zinc-500 mb-1">Logo</p>
           <div className="flex items-center gap-4">
@@ -127,7 +127,7 @@ export function Preferencias() {
             value={form.textoTermoInscricao}
             onChange={(e) => setForm({ ...form, textoTermoInscricao: e.target.value })}
             rows={4}
-            className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
           />
         </label>
       </div>

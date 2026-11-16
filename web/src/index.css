@@ -3,5 +3,6 @@
 @tailwind utilities;
 
 body {
-  @apply bg-stone-100 text-zinc-900 font-sans antialiased;
+  @apply bg-slate-100 text-zinc-900 font-sans antialiased text-sm;
+  font-feature-settings: 'cv11', 'ss01';
 }

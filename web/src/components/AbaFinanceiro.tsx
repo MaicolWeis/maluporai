@@ -16,7 +16,7 @@ export function AbaFinanceiro({ viagemId }: { viagemId: string }) {
   const linhas: { label: string; valor: string; cls: string; dica?: string }[] = [
     { label: 'Receita prevista', valor: fin.receitaPrevista, cls: 'text-zinc-900', dica: 'Soma das inscrições confirmadas' },
     { label: 'Recebido', valor: fin.recebido, cls: 'text-emerald-700' },
-    { label: 'A receber', valor: fin.aReceber, cls: 'text-amber-600', dica: 'Saldo em aberto das confirmadas' },
+    { label: 'A receber', valor: fin.aReceber, cls: 'text-brand', dica: 'Saldo em aberto das confirmadas' },
     { label: 'Despesas', valor: fin.despesas, cls: 'text-red-700' },
     { label: 'A devolver', valor: fin.aDevolver, cls: 'text-zinc-500', dica: 'Pagamentos de inscrições canceladas' },
   ];
@@ -47,17 +47,17 @@ export function AbaFinanceiro({ viagemId }: { viagemId: string }) {
           }`}
         >
           <p className="text-xs text-zinc-500">Resultado atual</p>
-          <p className={`text-xl font-black ${atualPositivo ? 'text-emerald-700' : 'text-red-700'}`}>
+          <p className={`text-xl font-semibold ${atualPositivo ? 'text-emerald-700' : 'text-red-700'}`}>
             {formatBRL(fin.resultadoAtual)}
           </p>
           <p className="text-xs text-zinc-400 mt-1">Recebido − despesas</p>
         </div>
-        <div className="rounded-xl p-4 border bg-zinc-900 border-zinc-900 text-white">
-          <p className="text-xs text-zinc-400">Resultado previsto</p>
-          <p className={`text-xl font-black ${previstoPositivo ? 'text-amber-400' : 'text-red-400'}`}>
+        <div className="rounded-xl p-4 border bg-brand-soft border-brand-border">
+          <p className="text-xs text-brand-ink">Resultado previsto</p>
+          <p className={`text-xl font-semibold ${previstoPositivo ? 'text-brand' : 'text-red-700'}`}>
             {formatBRL(fin.resultadoPrevisto)}
           </p>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-brand-ink mt-1">
             {fin.margemPrevista == null ? 'Sem receita prevista ainda' : `Margem prevista ${fin.margemPrevista.toLocaleString('pt-BR')}%`}
           </p>
         </div>

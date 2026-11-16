@@ -121,9 +121,9 @@ export function AbaDespesas({ viagem, onAtualizado }: { viagem: ViagemDetalhe; o
         <FormDespesa viagemId={viagem.id} categorias={categorias} onSalvo={recarregar} />
       </div>
 
-      <div className="sticky -bottom-6 -mx-6 -mb-6 px-6 py-3 bg-zinc-900 text-white flex items-center justify-between">
-        <span className="text-sm text-zinc-300">Total de despesas</span>
-        <span className="text-lg font-bold text-red-400">{formatBRL(dados.total)}</span>
+      <div className="sticky -bottom-6 -mx-6 -mb-6 px-6 py-3 bg-white border-t border-slate-200 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total de despesas</span>
+        <span className="text-base font-semibold font-mono text-red-700">{formatBRL(dados.total)}</span>
       </div>
     </div>
   );

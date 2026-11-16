@@ -3,7 +3,6 @@ import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
 import { NovaViagemModal } from '../components/NovaViagemModal';
 import { Pill } from '../components/Pill';
-import { RoadStrip } from '../components/RoadStrip';
 import { ViagemDrawer } from '../components/ViagemDrawer';
 import { api } from '../lib/api';
 import { formatBRL, formatDataCivil } from '../lib/format';
@@ -21,7 +20,7 @@ const STATUS_PILL: Record<ViagemStatus, string> = {
   planejamento: 'bg-stone-100 text-zinc-600 border border-stone-200',
   inscricoes: 'bg-amber-100 text-amber-700 border border-amber-200',
   confirmada: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  concluida: 'bg-zinc-900 text-amber-400',
+  concluida: 'bg-brand text-white',
   cancelada: 'bg-red-100 text-red-700 border border-red-200',
 };
 
@@ -54,7 +53,10 @@ export function Viagens() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black">Viagens</h1>
+        <div>
+          <h1 className="text-base font-semibold text-slate-900">Viagens</h1>
+          <p className="text-xs text-slate-500">Planejamento, inscrições e financeiro de cada viagem</p>
+        </div>
         <Button onClick={() => setModalAberto(true)}>Nova viagem</Button>
       </div>
 
@@ -71,12 +73,11 @@ export function Viagens() {
                 key={v.id}
                 type="button"
                 onClick={() => setViagemSelecionadaId(v.id)}
-                className="text-left bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-colors"
+                className="text-left bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden hover:border-brand transition-colors"
               >
-                <RoadStrip />
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="font-black text-zinc-900">{v.nome}</p>
+                    <p className="font-semibold text-zinc-900">{v.nome}</p>
                     <Pill cls={STATUS_PILL[v.status]}>{STATUS_LABEL[v.status]}</Pill>
                   </div>
                   <p className="text-xs text-zinc-500">
@@ -92,7 +93,7 @@ export function Viagens() {
                       </span>
                     </div>
                     <div className="h-2 w-full bg-stone-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400" style={{ width: `${ocupacaoPct}%` }} />
+                      <div className="h-full bg-brand" style={{ width: `${ocupacaoPct}%` }} />
                     </div>
                   </div>
 

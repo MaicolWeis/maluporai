@@ -40,7 +40,7 @@ export function Privacidade() {
 
   return (
     <div className="max-w-lg space-y-6">
-      <form onSubmit={salvar} className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
+      <form onSubmit={salvar} className="bg-white rounded-xl border border-stone-200 shadow-card p-6 space-y-4">
         <Input
           label="Prazo de retenção de dados (meses)"
           type="number"
@@ -64,7 +64,7 @@ export function Privacidade() {
         </Button>
       </form>
 
-      <Link to="/privacidade" className="text-sm font-semibold text-amber-600 hover:text-amber-700">
+      <Link to="/privacidade" className="text-sm font-semibold text-brand hover:text-brand-hover">
         Ver a Política de Privacidade da plataforma
       </Link>
     </div>

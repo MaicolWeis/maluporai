@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { RoadStrip } from '../components/RoadStrip';
 import { api } from '../lib/api';
 
 export function AtivarConta() {
@@ -35,10 +34,9 @@ export function AtivarConta() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
-        <RoadStrip />
         <div className="p-6 space-y-4">
           <div>
-            <h1 className="text-xl font-black">Ativar conta</h1>
+            <h1 className="text-xl font-semibold">Ativar conta</h1>
             <p className="text-sm text-zinc-500">Defina sua senha para começar a usar o maluporai.</p>
           </div>
           {sucesso ? (
@@ -59,7 +57,7 @@ export function AtivarConta() {
               </Button>
             </form>
           )}
-          <Link to="/login" className="block text-sm font-semibold text-amber-600 hover:text-amber-700">
+          <Link to="/login" className="block text-sm font-semibold text-brand hover:text-brand-hover">
             Voltar para o login
           </Link>
         </div>

@@ -31,7 +31,7 @@ const ACOES: Record<string, { label: string; cls: string }> = {
   delete: { label: 'exclusão', cls: 'bg-red-100 text-red-700 border border-red-200' },
   login: { label: 'login', cls: 'bg-stone-100 text-zinc-700 border border-stone-200' },
   export: { label: 'exportação', cls: 'bg-sky-100 text-sky-700 border border-sky-200' },
-  anonimizacao: { label: 'anonimização', cls: 'bg-zinc-900 text-amber-400' },
+  anonimizacao: { label: 'anonimização', cls: 'bg-brand text-white' },
 };
 
 const dataHora = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
@@ -63,7 +63,7 @@ export function Auditoria() {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={aplicar} className="bg-white rounded-xl border border-stone-200 p-4 grid grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+      <form onSubmit={aplicar} className="bg-white rounded-xl border border-stone-200 shadow-card p-4 grid grid-cols-2 lg:grid-cols-6 gap-3 items-end">
         <Select label="Usuário" value={filtros.userId} onChange={(e) => setFiltros({ ...filtros, userId: e.target.value })}>
           <option value="">Todos</option>
           {dados?.filtros.usuarios.map((u) => (
@@ -100,7 +100,7 @@ export function Auditoria() {
       ) : (
         <div className="bg-white rounded-xl border border-stone-200 overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-stone-50 text-xs text-zinc-500">
+            <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="text-left px-4 py-2">Quando</th>
                 <th className="text-left px-4 py-2">Usuário</th>
