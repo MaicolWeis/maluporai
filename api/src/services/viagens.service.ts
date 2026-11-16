@@ -1,4 +1,5 @@
 import { Prisma, type Viagem, type ViagemStatus } from '@prisma/client';
+import { agendar } from './geocodificacao.service.js';
 import { AppError, notFound } from '../lib/errors.js';
 import { somarPagamentos } from '../lib/pagamento.js';
 import { recordAuditLog } from '../repositories/audit-log.repository.js';
@@ -89,6 +90,7 @@ function toListItemDTO(viagem: Viagem & ComAgregados) {
     nome: viagem.nome,
     destinoCidade: viagem.destinoCidade,
     destinoUf: viagem.destinoUf,
+    destinoPais: viagem.destinoPais,
     dataInicio: viagem.dataInicio,
     dataFim: viagem.dataFim,
     status: viagem.status,
@@ -109,6 +111,7 @@ function toDetailDTO(
     nome: viagem.nome,
     destinoCidade: viagem.destinoCidade,
     destinoUf: viagem.destinoUf,
+    destinoPais: viagem.destinoPais,
     dataInicio: viagem.dataInicio,
     dataFim: viagem.dataFim,
     capacidade: viagem.capacidade,
@@ -168,7 +171,12 @@ async function auditarViagem(
 
 export async function criarViagem(input: CriarViagemInput, ator: Ator, meta: RequestMeta) {
   const viagem = await createViagem(input);
-  await auditarViagem('create', viagem.id, ator, meta, { nome: input.nome, destinoCidade: input.destinoCidade });
+  agendar([{ cidade: input.destinoCidade, estado: input.destinoUf, pais: input.destinoPais }]);
+  await auditarViagem('create', viagem.id, ator, meta, {
+    nome: input.nome,
+    destinoCidade: input.destinoCidade,
+    destinoPais: input.destinoPais,
+  });
   return obterViagem(viagem.id);
 }
 
@@ -183,7 +191,14 @@ export async function atualizarViagem(id: string, input: AtualizarViagemInput, a
     throw new AppError(400, 'DATAS_INVALIDAS', 'A data final não pode ser anterior à data de início');
   }
 
+  const pais = input.destinoPais ?? existente.destinoPais;
+  const uf = input.destinoUf !== undefined ? input.destinoUf : existente.destinoUf;
+  if (pais === 'BR' && !(uf && /^[A-Za-z]{2}$/.test(uf))) {
+    throw new AppError(400, 'UF_OBRIGATORIA', 'Informe a UF (2 letras) para destinos no Brasil');
+  }
+
   await updateViagem(id, input);
+  agendar([{ cidade: input.destinoCidade ?? existente.destinoCidade, estado: uf, pais }]);
   await auditarViagem('update', id, ator, meta, { ...input });
   return obterViagem(id);
 }

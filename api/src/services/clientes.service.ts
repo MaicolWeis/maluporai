@@ -1,3 +1,4 @@
+import { agendar } from './geocodificacao.service.js';
 import { Prisma, type Cliente, type InscricaoStatus } from '@prisma/client';
 import { AppError, notFound, unauthorized } from '../lib/errors.js';
 import { decryptField, encryptField, hashForLookup } from '../lib/crypto.js';
@@ -98,7 +99,7 @@ export async function listarClientes(query: ListarClientesQuery) {
 
 function toInscricaoResumoDTO(inscricao: {
   id: string;
-  viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string };
+  viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string | null; destinoPais: string };
   status: InscricaoStatus;
   valorTotal: Prisma.Decimal;
   pagamentos: { valor: Prisma.Decimal }[];
@@ -164,6 +165,7 @@ export async function criarCliente(input: CriarClienteInput, ator: Ator, meta: R
     consentimentoMarketing,
     consentimentoEm: consentimentoMarketing ? new Date() : undefined,
   });
+  if (input.cidade) agendar([{ cidade: input.cidade, estado: input.uf, pais: 'BR' }]);
 
   await recordAuditLog({
     acao: 'create',
@@ -184,6 +186,7 @@ export async function atualizarCliente(
   meta: RequestMeta,
 ) {
   const existente = await findClienteByIdOrNull(id);
+  if (input.cidade) agendar([{ cidade: input.cidade, estado: input.uf ?? existente?.uf, pais: 'BR' }]);
   if (!existente) throw notFound();
 
   const { cpf, consentimentoMarketing, ...resto } = input;
@@ -283,7 +286,7 @@ interface DadosExportados {
   cadastro: Omit<ReturnType<typeof toDetailDTO>, 'cpfMascarado'> & { cpf: string | null };
   inscricoes: {
     id: string;
-    viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string };
+    viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string | null; destinoPais: string };
     levaAcompanhante: boolean;
     nomeAcompanhante: string | null;
     seguroViagem: boolean;

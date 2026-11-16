@@ -21,6 +21,7 @@ import { AbaDespesas } from './AbaDespesas';
 import { AbaEmbarque } from './AbaEmbarque';
 import { AbaFinanceiro } from './AbaFinanceiro';
 import { ComprovanteInline } from './FileUpload';
+import { CamposDestino } from './CamposDestino';
 import { ContatoAcoes } from './ContatoAcoes';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
@@ -203,7 +204,8 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
   const [form, setForm] = useState({
     nome: viagem.nome,
     destinoCidade: viagem.destinoCidade,
-    destinoUf: viagem.destinoUf,
+    destinoUf: viagem.destinoUf ?? '',
+    destinoPais: viagem.destinoPais ?? 'BR',
     dataInicio: viagem.dataInicio.slice(0, 10),
     dataFim: viagem.dataFim.slice(0, 10),
     capacidade: String(viagem.capacidade),
@@ -224,7 +226,8 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
       await api.patch(`/viagens/${viagem.id}`, {
         nome: form.nome,
         destinoCidade: form.destinoCidade,
-        destinoUf: form.destinoUf,
+        destinoUf: form.destinoUf || null,
+        destinoPais: form.destinoPais,
         dataInicio: form.dataInicio,
         dataFim: form.dataFim,
         capacidade: Number(form.capacidade),
@@ -262,25 +265,7 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
       </div>
 
       <Input label="Nome" required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <Input
-            label="Destino (cidade)"
-            required
-            value={form.destinoCidade}
-            onChange={(e) => setForm({ ...form, destinoCidade: e.target.value })}
-          />
-        </div>
-        <div className="w-20">
-          <Input
-            label="UF"
-            maxLength={2}
-            required
-            value={form.destinoUf}
-            onChange={(e) => setForm({ ...form, destinoUf: e.target.value.toUpperCase() })}
-          />
-        </div>
-      </div>
+      <CamposDestino valor={form} onChange={(d) => setForm({ ...form, ...d })} />
       <div className="flex gap-2">
         <div className="flex-1">
           <Input

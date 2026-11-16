@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatDestino } from '../lib/paises';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { formatBRL } from '../lib/format';
@@ -310,7 +311,7 @@ function AbaViagens({ inscricoes }: { inscricoes: InscricaoResumo[] }) {
             <Pill cls={STATUS_PAGAMENTO_PILL[i.statusPagamento]}>{i.statusPagamento}</Pill>
           </div>
           <p className="text-xs text-zinc-500">
-            {i.viagem.destinoCidade}/{i.viagem.destinoUf}
+            {formatDestino(i.viagem)}
           </p>
           <p className="text-xs text-zinc-600 mt-1">
             {formatBRL(i.valorPago)} de {formatBRL(i.valorTotal)}

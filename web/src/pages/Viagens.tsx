@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatDestino } from '../lib/paises';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
 import { Input } from '../components/Input';
@@ -128,7 +129,7 @@ export function Viagens() {
                     <Pill cls={STATUS_PILL[v.status]}>{STATUS_LABEL[v.status]}</Pill>
                   </div>
                   <p className="text-xs text-zinc-500">
-                    {v.destinoCidade}/{v.destinoUf}
+                    {formatDestino(v)}
                   </p>
                   <p className="text-xs text-zinc-500 mb-3">{formatPeriodo(v.dataInicio, v.dataFim)}</p>
 

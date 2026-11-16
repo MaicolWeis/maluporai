@@ -1,4 +1,5 @@
 import { Check, CloudOff, Search } from 'lucide-react';
+import { formatDestino } from '../lib/paises';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api';
 import {
@@ -186,7 +187,7 @@ export function AbaEmbarque({ viagem }: { viagem: ViagemDetalhe }) {
       viagem: {
         id: viagem.id,
         nome: viagem.nome,
-        destino: `${viagem.destinoCidade}/${viagem.destinoUf}`,
+        destino: formatDestino(viagem),
         dataInicio: viagem.dataInicio,
         dataFim: viagem.dataFim,
       },

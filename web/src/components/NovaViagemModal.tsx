@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { Button } from './Button';
 import { Input } from './Input';
 import { MoneyInput } from './MoneyInput';
+import { CamposDestino } from './CamposDestino';
 import { Modal } from './Modal';
 
 interface Props {
@@ -15,6 +16,7 @@ const FORM_INICIAL = {
   nome: '',
   destinoCidade: '',
   destinoUf: '',
+  destinoPais: 'BR',
   dataInicio: '',
   dataFim: '',
   capacidade: '',
@@ -41,7 +43,8 @@ export function NovaViagemModal({ aberto, onFechar, onCriada }: Props) {
       await api.post('/viagens', {
         nome: form.nome,
         destinoCidade: form.destinoCidade,
-        destinoUf: form.destinoUf,
+        destinoUf: form.destinoUf || null,
+        destinoPais: form.destinoPais,
         dataInicio: form.dataInicio,
         dataFim: form.dataFim,
         capacidade: Number(form.capacidade),
@@ -61,25 +64,10 @@ export function NovaViagemModal({ aberto, onFechar, onCriada }: Props) {
     <Modal titulo="Nova viagem" aberto={aberto} onFechar={fechar}>
       <form onSubmit={submit} className="space-y-4">
         <Input label="Nome" required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Input
-              label="Destino (cidade)"
-              required
-              value={form.destinoCidade}
-              onChange={(e) => setForm({ ...form, destinoCidade: e.target.value })}
-            />
-          </div>
-          <div className="w-20">
-            <Input
-              label="UF"
-              required
-              maxLength={2}
-              value={form.destinoUf}
-              onChange={(e) => setForm({ ...form, destinoUf: e.target.value.toUpperCase() })}
-            />
-          </div>
-        </div>
+        <CamposDestino
+          valor={form}
+          onChange={(d) => setForm({ ...form, ...d })}
+        />
         <div className="flex gap-2">
           <div className="flex-1">
             <Input

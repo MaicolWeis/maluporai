@@ -212,7 +212,8 @@ model Viagem {
   tenantId           String       @map("tenant_id") @db.Uuid
   nome               String
   destinoCidade      String       @map("destino_cidade")
-  destinoUf          String       @map("destino_uf") @db.VarChar(2)
+  destinoUf          String?      @map("destino_uf") @db.VarChar(60)
+  destinoPais        String       @default("BR") @map("destino_pais") @db.VarChar(2)
   dataInicio         DateTime     @map("data_inicio") @db.Date
   dataFim            DateTime     @map("data_fim") @db.Date
   capacidade         Int
@@ -398,4 +399,16 @@ model AuditLog {
 
   @@index([tenantId])
   @@map("audit_logs")
+}
+
+/// Coordenadas por cidade (chave "cidade|estado|país" normalizada). Global,
+/// sem tenant: não guarda nada pessoal. Ver services/geocodificacao.service.ts.
+model Geocache {
+  chave      String   @id
+  lat        Float?
+  lng        Float?
+  encontrado Boolean
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("geocache")
 }
