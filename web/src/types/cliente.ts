@@ -5,6 +5,8 @@ export interface ClienteListItem {
   cidade: string | null;
   uf: string | null;
   pais: string;
+  motoMarca: string | null;
+  motoModelo: string | null;
   consentimentoMarketing: boolean;
   anonimizadoEm: string | null;
   viagens: { id: string; nome: string }[];
@@ -28,6 +30,8 @@ export interface ClienteDetalhe {
   cidade: string | null;
   uf: string | null;
   pais: string;
+  motoMarca: string | null;
+  motoModelo: string | null;
   dataNascimento: string | null;
   contatoEmergenciaNome: string | null;
   contatoEmergenciaTelefone: string | null;

@@ -179,6 +179,8 @@ model Cliente {
   cidade                     String?
   uf                         String?   @db.VarChar(60)
   pais                       String    @default("BR") @db.VarChar(2)
+  motoMarca                  String?   @map("moto_marca") @db.VarChar(60)
+  motoModelo                 String?   @map("moto_modelo") @db.VarChar(80)
   dataNascimento             DateTime? @map("data_nascimento") @db.Date
   contatoEmergenciaNome      String?   @map("contato_emergencia_nome")
   contatoEmergenciaTelefone  String?   @map("contato_emergencia_telefone")

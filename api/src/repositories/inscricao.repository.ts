@@ -14,7 +14,7 @@ const LISTA_SELECT = {
   valorTotal: true,
   embarcadoEm: true,
   createdAt: true,
-  cliente: { select: { id: true, nome: true, telefone: true } },
+  cliente: { select: { id: true, nome: true, telefone: true, motoMarca: true, motoModelo: true } },
   pagamentos: { select: { valor: true, forma: true } },
 } satisfies Prisma.InscricaoSelect;
 

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { Button } from './Button';
 import { CamposLocalidade } from './CamposLocalidade';
+import { CamposMoto } from './CamposMoto';
+import { hojeLocalISO } from '../lib/format';
 import { Input } from './Input';
 import { Modal } from './Modal';
 
@@ -25,6 +27,9 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
   const [pais, setPais] = useState('BR');
+  const [dataNascimento, setDataNascimento] = useState('');
+  const [motoMarca, setMotoMarca] = useState('');
+  const [motoModelo, setMotoModelo] = useState('');
   const [consentimentoMarketing, setConsentimentoMarketing] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -37,6 +42,9 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
     setCidade('');
     setUf('');
     setPais('BR');
+    setDataNascimento('');
+    setMotoMarca('');
+    setMotoModelo('');
     setConsentimentoMarketing(false);
     setErro('');
   };
@@ -59,6 +67,9 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
         cidade: cidade.trim() || undefined,
         uf: uf.trim() || undefined,
         pais,
+        dataNascimento: dataNascimento || undefined,
+        motoMarca: motoMarca.trim() || undefined,
+        motoModelo: motoModelo.trim() || undefined,
         consentimentoMarketing,
       });
       onCriado(data.cliente);
@@ -83,6 +94,22 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
             setPais(l.pais);
             setCidade(l.cidade);
             setUf(l.estado);
+          }}
+        />
+        <Input
+          label="Data de nascimento"
+          type="date"
+          min="1900-01-01"
+          max={hojeLocalISO()}
+          value={dataNascimento}
+          onChange={(e) => setDataNascimento(e.target.value)}
+        />
+        <CamposMoto
+          marca={motoMarca}
+          modelo={motoModelo}
+          onChange={({ marca, modelo }) => {
+            setMotoMarca(marca);
+            setMotoModelo(modelo);
           }}
         />
         <label className="flex items-start gap-2 text-xs text-zinc-600">

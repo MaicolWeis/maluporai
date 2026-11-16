@@ -40,6 +40,8 @@ function toListItemDTO(cliente: {
   cidade: string | null;
   uf: string | null;
   pais: string;
+  motoMarca: string | null;
+  motoModelo: string | null;
   consentimentoMarketing: boolean;
   anonimizadoEm: Date | null;
   inscricoes: { viagem: { id: string; nome: string } }[];
@@ -51,6 +53,8 @@ function toListItemDTO(cliente: {
     cidade: cliente.cidade,
     uf: cliente.uf,
     pais: cliente.pais,
+    motoMarca: cliente.motoMarca,
+    motoModelo: cliente.motoModelo,
     consentimentoMarketing: cliente.consentimentoMarketing,
     anonimizadoEm: cliente.anonimizadoEm,
     viagens: cliente.inscricoes.map((i) => i.viagem),
@@ -67,6 +71,8 @@ function toDetailDTO(cliente: Cliente) {
     cidade: cliente.cidade,
     uf: cliente.uf,
     pais: cliente.pais,
+    motoMarca: cliente.motoMarca,
+    motoModelo: cliente.motoModelo,
     dataNascimento: cliente.dataNascimento,
     contatoEmergenciaNome: cliente.contatoEmergenciaNome,
     contatoEmergenciaTelefone: cliente.contatoEmergenciaTelefone,
@@ -162,6 +168,8 @@ export async function criarCliente(input: CriarClienteInput, ator: Ator, meta: R
     cidade: input.cidade,
     uf: input.uf,
     pais: input.pais ?? 'BR',
+    motoMarca: input.motoMarca,
+    motoModelo: input.motoModelo,
     dataNascimento: input.dataNascimento,
     contatoEmergenciaNome: input.contatoEmergenciaNome,
     contatoEmergenciaTelefone: input.contatoEmergenciaTelefone,
