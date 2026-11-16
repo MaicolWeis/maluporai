@@ -8,6 +8,7 @@ const LISTA_SELECT = {
   telefone: true,
   cidade: true,
   uf: true,
+  pais: true,
   consentimentoMarketing: true,
   anonimizadoEm: true,
   createdAt: true,
@@ -80,7 +81,8 @@ interface CreateClienteInput {
   cpfHash?: string;
   email?: string;
   cidade?: string;
-  uf?: string;
+  uf?: string | null;
+  pais?: string;
   dataNascimento?: Date;
   contatoEmergenciaNome?: string;
   contatoEmergenciaTelefone?: string;
@@ -102,7 +104,8 @@ interface UpdateClienteInput {
   cpfHash?: string;
   email?: string;
   cidade?: string;
-  uf?: string;
+  uf?: string | null;
+  pais?: string;
   dataNascimento?: Date;
   contatoEmergenciaNome?: string;
   contatoEmergenciaTelefone?: string;

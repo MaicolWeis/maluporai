@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Search, UserPlus } from 'lucide-react';
+import { formatCidade } from '../lib/paises';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import type { ClienteListItem } from '../types/cliente';
@@ -147,7 +148,7 @@ export function PesquisaClienteModal({ aberto, onFechar, onSelecionar, idsIndisp
                     )}
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{c.telefone}</td>
-                  <td className="px-3 py-2">{c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}</td>
+                  <td className="px-3 py-2">{formatCidade(c) || '—'}</td>
                   <td className="px-3 py-2 text-slate-500">{c.viagens.length}</td>
                 </tr>
               );
@@ -179,7 +180,7 @@ export function PesquisaClienteModal({ aberto, onFechar, onSelecionar, idsIndisp
                 </div>
                 <p className="text-xs text-slate-500">
                   {c.telefone}
-                  {c.cidade ? ` · ${c.cidade}${c.uf ? `/${c.uf}` : ''}` : ''}
+                  {c.cidade ? ` · ${formatCidade(c)}` : ''}
                 </p>
               </button>
             </li>

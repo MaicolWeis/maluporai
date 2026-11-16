@@ -1,6 +1,4 @@
-import { OUTROS_PAISES, PAISES_AMERICA_LATINA, UFS, bandeira, nomePais } from '../lib/paises';
-import { Input } from './Input';
-import { Select } from './Select';
+import { CamposLocalidade } from './CamposLocalidade';
 
 export interface Destino {
   destinoCidade: string;
@@ -8,69 +6,14 @@ export interface Destino {
   destinoPais: string;
 }
 
-/** País + cidade + UF (Brasil) ou estado/província (fora do Brasil). */
+/** Destino da viagem: país + cidade + UF/província (cidade obrigatória; UF obrigatória no Brasil). */
 export function CamposDestino({ valor, onChange }: { valor: Destino; onChange: (v: Destino) => void }) {
-  const noBrasil = valor.destinoPais === 'BR';
-  const ordenar = (lista: string[]) => [...lista].sort((a, b) => nomePais(a).localeCompare(nomePais(b), 'pt-BR'));
   return (
-    <div className="space-y-2">
-      <Select
-        label="País de destino"
-        value={valor.destinoPais}
-        onChange={(e) => onChange({ ...valor, destinoPais: e.target.value, destinoUf: '' })}
-      >
-        <optgroup label="América Latina">
-          {ordenar(PAISES_AMERICA_LATINA).map((p) => (
-            <option key={p} value={p}>
-              {bandeira(p)} {nomePais(p)}
-            </option>
-          ))}
-        </optgroup>
-        <optgroup label="Outros">
-          {ordenar(OUTROS_PAISES).map((p) => (
-            <option key={p} value={p}>
-              {bandeira(p)} {nomePais(p)}
-            </option>
-          ))}
-        </optgroup>
-      </Select>
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <Input
-            label="Cidade"
-            required
-            value={valor.destinoCidade}
-            onChange={(e) => onChange({ ...valor, destinoCidade: e.target.value })}
-          />
-        </div>
-        {noBrasil ? (
-          <div className="w-24">
-            <Select
-              label="UF"
-              required
-              value={valor.destinoUf}
-              onChange={(e) => onChange({ ...valor, destinoUf: e.target.value })}
-            >
-              <option value="" disabled>
-                —
-              </option>
-              {UFS.map((uf) => (
-                <option key={uf} value={uf}>
-                  {uf}
-                </option>
-              ))}
-            </Select>
-          </div>
-        ) : (
-          <div className="flex-1">
-            <Input
-              label="Estado/província (opcional)"
-              value={valor.destinoUf}
-              onChange={(e) => onChange({ ...valor, destinoUf: e.target.value })}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+    <CamposLocalidade
+      obrigatorio
+      rotuloPais="País de destino"
+      valor={{ pais: valor.destinoPais, cidade: valor.destinoCidade, estado: valor.destinoUf }}
+      onChange={(l) => onChange({ destinoPais: l.pais, destinoCidade: l.cidade, destinoUf: l.estado })}
+    />
   );
 }

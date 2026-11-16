@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../lib/api';
 import { Button } from './Button';
+import { CamposLocalidade } from './CamposLocalidade';
 import { Input } from './Input';
 import { Modal } from './Modal';
 
@@ -23,6 +24,7 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
   const [email, setEmail] = useState('');
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
+  const [pais, setPais] = useState('BR');
   const [consentimentoMarketing, setConsentimentoMarketing] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -34,6 +36,7 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
     setEmail('');
     setCidade('');
     setUf('');
+    setPais('BR');
     setConsentimentoMarketing(false);
     setErro('');
   };
@@ -55,6 +58,7 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
         email: email.trim() || undefined,
         cidade: cidade.trim() || undefined,
         uf: uf.trim() || undefined,
+        pais,
         consentimentoMarketing,
       });
       onCriado(data.cliente);
@@ -73,14 +77,14 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
         <Input label="Telefone" type="tel" required value={telefone} onChange={(e) => setTelefone(e.target.value)} />
         <Input label="CPF (opcional)" inputMode="numeric" value={cpf} onChange={(e) => setCpf(e.target.value)} />
         <Input label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Input label="Cidade" value={cidade} onChange={(e) => setCidade(e.target.value)} />
-          </div>
-          <div className="w-20">
-            <Input label="UF" maxLength={2} value={uf} onChange={(e) => setUf(e.target.value.toUpperCase())} />
-          </div>
-        </div>
+        <CamposLocalidade
+          valor={{ pais, cidade, estado: uf }}
+          onChange={(l) => {
+            setPais(l.pais);
+            setCidade(l.cidade);
+            setUf(l.estado);
+          }}
+        />
         <label className="flex items-start gap-2 text-xs text-zinc-600">
           <input
             type="checkbox"

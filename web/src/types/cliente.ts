@@ -4,6 +4,7 @@ export interface ClienteListItem {
   telefone: string;
   cidade: string | null;
   uf: string | null;
+  pais: string;
   consentimentoMarketing: boolean;
   anonimizadoEm: string | null;
   viagens: { id: string; nome: string }[];
@@ -26,6 +27,7 @@ export interface ClienteDetalhe {
   email: string | null;
   cidade: string | null;
   uf: string | null;
+  pais: string;
   dataNascimento: string | null;
   contatoEmergenciaNome: string | null;
   contatoEmergenciaTelefone: string | null;

@@ -177,7 +177,8 @@ model Cliente {
   telefone                   String
   email                      String?
   cidade                     String?
-  uf                         String?   @db.VarChar(2)
+  uf                         String?   @db.VarChar(60)
+  pais                       String    @default("BR") @db.VarChar(2)
   dataNascimento             DateTime? @map("data_nascimento") @db.Date
   contatoEmergenciaNome      String?   @map("contato_emergencia_nome")
   contatoEmergenciaTelefone  String?   @map("contato_emergencia_telefone")

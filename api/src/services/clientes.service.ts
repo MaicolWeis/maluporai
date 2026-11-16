@@ -39,6 +39,7 @@ function toListItemDTO(cliente: {
   telefone: string;
   cidade: string | null;
   uf: string | null;
+  pais: string;
   consentimentoMarketing: boolean;
   anonimizadoEm: Date | null;
   inscricoes: { viagem: { id: string; nome: string } }[];
@@ -49,6 +50,7 @@ function toListItemDTO(cliente: {
     telefone: cliente.telefone,
     cidade: cliente.cidade,
     uf: cliente.uf,
+    pais: cliente.pais,
     consentimentoMarketing: cliente.consentimentoMarketing,
     anonimizadoEm: cliente.anonimizadoEm,
     viagens: cliente.inscricoes.map((i) => i.viagem),
@@ -64,6 +66,7 @@ function toDetailDTO(cliente: Cliente) {
     email: cliente.email,
     cidade: cliente.cidade,
     uf: cliente.uf,
+    pais: cliente.pais,
     dataNascimento: cliente.dataNascimento,
     contatoEmergenciaNome: cliente.contatoEmergenciaNome,
     contatoEmergenciaTelefone: cliente.contatoEmergenciaTelefone,
@@ -158,6 +161,7 @@ export async function criarCliente(input: CriarClienteInput, ator: Ator, meta: R
     email: input.email,
     cidade: input.cidade,
     uf: input.uf,
+    pais: input.pais ?? 'BR',
     dataNascimento: input.dataNascimento,
     contatoEmergenciaNome: input.contatoEmergenciaNome,
     contatoEmergenciaTelefone: input.contatoEmergenciaTelefone,
@@ -165,7 +169,7 @@ export async function criarCliente(input: CriarClienteInput, ator: Ator, meta: R
     consentimentoMarketing,
     consentimentoEm: consentimentoMarketing ? new Date() : undefined,
   });
-  if (input.cidade) agendar([{ cidade: input.cidade, estado: input.uf, pais: 'BR' }]);
+  if (input.cidade) agendar([{ cidade: input.cidade, estado: input.uf, pais: input.pais ?? 'BR' }]);
 
   await recordAuditLog({
     acao: 'create',
@@ -186,8 +190,16 @@ export async function atualizarCliente(
   meta: RequestMeta,
 ) {
   const existente = await findClienteByIdOrNull(id);
-  if (input.cidade) agendar([{ cidade: input.cidade, estado: input.uf ?? existente?.uf, pais: 'BR' }]);
   if (!existente) throw notFound();
+
+  // País e UF precisam fazer sentido juntos, considerando o que já está salvo.
+  const pais = input.pais ?? existente.pais;
+  const uf = input.uf !== undefined ? input.uf : existente.uf;
+  if (pais === 'BR' && uf && !/^[A-Za-z]{2}$/.test(uf)) {
+    throw new AppError(400, 'UF_INVALIDA', 'UF inválida (use 2 letras para cidades do Brasil)');
+  }
+  const cidade = input.cidade ?? existente.cidade;
+  if (cidade) agendar([{ cidade, estado: uf, pais }]);
 
   const { cpf, consentimentoMarketing, ...resto } = input;
   const data: Parameters<typeof updateCliente>[1] = { ...resto };

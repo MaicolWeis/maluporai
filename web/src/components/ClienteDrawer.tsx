@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { formatBRL } from '../lib/format';
 import type { ClienteDetalhe, InscricaoResumo } from '../types/cliente';
 import { Button } from './Button';
+import { CamposLocalidade } from './CamposLocalidade';
 import { ContatoAcoes } from './ContatoAcoes';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
@@ -113,6 +114,7 @@ function AbaDados({
     email: cliente.email ?? '',
     cidade: cliente.cidade ?? '',
     uf: cliente.uf ?? '',
+    pais: cliente.pais ?? 'BR',
     dataNascimento: cliente.dataNascimento?.slice(0, 10) ?? '',
     contatoEmergenciaNome: cliente.contatoEmergenciaNome ?? '',
     contatoEmergenciaTelefone: cliente.contatoEmergenciaTelefone ?? '',
@@ -150,7 +152,8 @@ function AbaDados({
         telefone: form.telefone,
         email: form.email.trim() || undefined,
         cidade: form.cidade.trim() || undefined,
-        uf: form.uf.trim() || undefined,
+        uf: form.uf.trim() || null,
+        pais: form.pais,
         dataNascimento: form.dataNascimento || undefined,
         contatoEmergenciaNome: form.contatoEmergenciaNome.trim() || undefined,
         contatoEmergenciaTelefone: form.contatoEmergenciaTelefone.trim() || undefined,
@@ -217,19 +220,10 @@ function AbaDados({
       </div>
 
       <Input label="E-mail" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <Input label="Cidade" value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} />
-        </div>
-        <div className="w-20">
-          <Input
-            label="UF"
-            maxLength={2}
-            value={form.uf}
-            onChange={(e) => setForm({ ...form, uf: e.target.value.toUpperCase() })}
-          />
-        </div>
-      </div>
+      <CamposLocalidade
+        valor={{ pais: form.pais, cidade: form.cidade, estado: form.uf }}
+        onChange={(l) => setForm({ ...form, pais: l.pais, cidade: l.cidade, uf: l.estado })}
+      />
       <Input
         label="Data de nascimento"
         type="date"

@@ -32,3 +32,11 @@ export function formatDestino(v: { destinoCidade: string; destinoUf?: string | n
   if (pais === 'BR') return `${v.destinoCidade}${v.destinoUf ? `/${v.destinoUf}` : ''}`;
   return `${bandeira(pais)} ${v.destinoCidade}${v.destinoUf ? `, ${v.destinoUf}` : ''} · ${nomePais(pais)}`;
 }
+
+/** Cidade do cliente: "Blumenau/SC" no Brasil; "🇺🇾 Montevideo · Uruguai" fora. Vazio sem cidade. */
+export function formatCidade(c: { cidade: string | null; uf?: string | null; pais?: string | null }) {
+  if (!c.cidade) return '';
+  const pais = c.pais ?? 'BR';
+  if (pais === 'BR') return `${c.cidade}${c.uf ? `/${c.uf}` : ''}`;
+  return `${bandeira(pais)} ${c.cidade}${c.uf ? `, ${c.uf}` : ''} · ${nomePais(pais)}`;
+}
