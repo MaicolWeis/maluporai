@@ -19,6 +19,7 @@ async function criarTenantComAdmin() {
       nome: `Admin ${suffix}`,
       email: `admin-despesas-${suffix}@teste-despesas.com`,
       senha: `SenhaForte-${suffix}-9x`,
+      aceiteTermos: true,
     });
   createdTenantIds.push(res.body.user.tenant.id);
   return { tenantId: res.body.user.tenant.id as string, token: res.body.accessToken as string };

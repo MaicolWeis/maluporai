@@ -5,6 +5,7 @@ const ABAS = [
   { to: 'preferencias', label: 'Preferências' },
   { to: 'usuarios', label: 'Usuários' },
   { to: 'privacidade', label: 'Privacidade' },
+  { to: 'auditoria', label: 'Auditoria' },
 ];
 
 export function ConfiguracoesLayout() {

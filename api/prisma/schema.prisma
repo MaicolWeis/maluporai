@@ -71,6 +71,9 @@ model User {
   papel         UserRole   @default(operador)
   status        UserStatus @default(ativo)
   ultimoLoginAt DateTime?  @map("ultimo_login_at")
+  // Aceite dos termos de uso (P11): versão aceita e quando.
+  termosVersao    String?   @map("termos_versao")
+  termosAceitosEm DateTime? @map("termos_aceitos_em") @db.Timestamptz
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 

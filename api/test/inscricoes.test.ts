@@ -17,6 +17,7 @@ function signupPayload(suffix: string) {
     nome: `Admin ${suffix}`,
     email: `admin-inscricoes-${suffix}@teste-inscricoes.com`,
     senha: `SenhaForte-${suffix}-9x`,
+    aceiteTermos: true,
   };
 }
 

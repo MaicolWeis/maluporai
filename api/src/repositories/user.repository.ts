@@ -6,6 +6,7 @@ interface CreateAdminUserInput {
   nome: string;
   email: string;
   senhaHash: string;
+  termosVersao?: string;
 }
 
 /** Precisa rodar dentro de runWithTenant(tenantId, ...). */
@@ -17,6 +18,8 @@ export function createAdminUser(input: CreateAdminUserInput) {
       senhaHash: input.senhaHash,
       papel: 'admin',
       status: 'ativo',
+      termosVersao: input.termosVersao,
+      termosAceitosEm: input.termosVersao ? new Date() : undefined,
     }),
   });
 }

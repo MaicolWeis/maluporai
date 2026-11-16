@@ -71,6 +71,23 @@ function contarPessoas(inscricoes: { levaAcompanhante: boolean }[]) {
   return inscricoes.reduce((total, i) => total + 1 + (i.levaAcompanhante ? 1 : 0), 0);
 }
 
+/**
+ * A capacidade também é garantida no banco (trigger inscricoes_capacidade, P11),
+ * que trava a viagem durante o INSERT/UPDATE. A checagem prévia acima só dá uma
+ * mensagem melhor no caso comum; a corrida entre duas inscrições simultâneas
+ * é resolvida aqui.
+ */
+async function comTravaDeCapacidade<T>(operacao: () => Promise<T>): Promise<T> {
+  try {
+    return await operacao();
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('CAPACIDADE_EXCEDIDA')) {
+      throw new AppError(400, 'CAPACIDADE_EXCEDIDA', 'A viagem atingiu a capacidade máxima — inscreva em lista de espera');
+    }
+    throw err;
+  }
+}
+
 export async function listarInscricoesDaViagem(viagemId: string) {
   const viagem = await garantirViagem(viagemId);
   const inscricoes = await listInscricoesPorViagem(viagemId);
@@ -129,7 +146,7 @@ export async function criarInscricao(viagemId: string, input: CriarInscricaoInpu
     input.valorTotal ??
     Number(viagem.precoTitular) + (input.levaAcompanhante ? Number(viagem.precoAcompanhante ?? 0) : 0);
 
-  const inscricao = await createInscricao(viagemId, {
+  const inscricao = await comTravaDeCapacidade(() => createInscricao(viagemId, {
     clienteId: input.clienteId,
     levaAcompanhante: input.levaAcompanhante,
     nomeAcompanhante: input.nomeAcompanhante,
@@ -139,7 +156,7 @@ export async function criarInscricao(viagemId: string, input: CriarInscricaoInpu
     numeroApolice: input.numeroApolice,
     valorTotal,
     status: input.status,
-  });
+  }));
 
   await auditarInscricao('create', inscricao.id, ator, meta, {
     clienteId: input.clienteId,
@@ -172,7 +189,7 @@ export async function atualizarInscricao(
 ) {
   await garantirInscricaoEditavel(id);
 
-  const atualizada = await updateInscricao(id, input);
+  const atualizada = await comTravaDeCapacidade(() => updateInscricao(id, input));
   await auditarInscricao('update', id, ator, meta, { ...input });
   return toInscricaoDTO(atualizada);
 }

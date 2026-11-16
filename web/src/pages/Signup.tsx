@@ -12,6 +12,7 @@ interface Erros {
   nome?: string;
   email?: string;
   senha?: string;
+  termos?: string;
   geral?: string;
 }
 
@@ -22,6 +23,7 @@ export function Signup() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [aceiteTermos, setAceiteTermos] = useState(false);
   const [erros, setErros] = useState<Erros>({});
   const [enviando, setEnviando] = useState(false);
 
@@ -41,6 +43,7 @@ export function Signup() {
     if (nome.trim().length < 2) next.nome = 'Informe seu nome';
     if (!/^\S+@\S+\.\S+$/.test(email)) next.email = 'E-mail inválido';
     if (senha.length < 8) next.senha = 'Senha deve ter ao menos 8 caracteres';
+    if (!aceiteTermos) next.termos = 'É preciso aceitar os termos para criar a conta';
     setErros(next);
     return Object.keys(next).length === 0;
   };
@@ -56,7 +59,7 @@ export function Signup() {
     setEnviando(true);
     setErros({});
     try {
-      const { data } = await api.post('/auth/signup', { nomeFantasia, documento, nome, email, senha });
+      const { data } = await api.post('/auth/signup', { nomeFantasia, documento, nome, email, senha, aceiteTermos });
       setSession(data.user, data.accessToken);
       navigate('/viagens', { replace: true });
     } catch (err: any) {
@@ -118,6 +121,22 @@ export function Signup() {
                 onChange={(e) => setSenha(e.target.value)}
                 error={erros.senha}
               />
+              <label className="flex items-start gap-2 text-xs text-zinc-600">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={aceiteTermos}
+                  onChange={(e) => setAceiteTermos(e.target.checked)}
+                />
+                <span>
+                  Li e aceito os Termos de Uso e a{' '}
+                  <Link to="/privacidade" target="_blank" className="font-semibold text-amber-600 hover:text-amber-700">
+                    Política de Privacidade
+                  </Link>
+                  . Sua empresa é a controladora dos dados dos seus clientes; o maluporai atua como operador.
+                </span>
+              </label>
+              {erros.termos && <p className="text-red-600 text-xs">{erros.termos}</p>}
               {erros.geral && <p className="text-red-600 text-xs">{erros.geral}</p>}
               <div className="flex gap-2">
                 <Button type="button" variant="secondary" className="flex-1" onClick={() => setEtapa(1)}>

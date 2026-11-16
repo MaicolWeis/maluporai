@@ -7,7 +7,9 @@ import { AtivarConta } from './pages/AtivarConta';
 import { Clientes } from './pages/Clientes';
 import { Empresa } from './pages/configuracoes/Empresa';
 import { Preferencias } from './pages/configuracoes/Preferencias';
+import { Auditoria } from './pages/configuracoes/Auditoria';
 import { Privacidade } from './pages/configuracoes/Privacidade';
+import { PoliticaPrivacidade } from './pages/PoliticaPrivacidade';
 import { EsqueciSenha } from './pages/EsqueciSenha';
 import { Login } from './pages/Login';
 import { RedefinirSenha } from './pages/RedefinirSenha';
@@ -41,6 +43,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/privacidade" element={<PoliticaPrivacidade />} />
       <Route path="/esqueci-senha" element={<EsqueciSenha />} />
       <Route path="/redefinir-senha/:token" element={<RedefinirSenha />} />
       <Route path="/ativar-conta/:token" element={<AtivarConta />} />
@@ -75,6 +78,7 @@ export default function App() {
           <Route path="preferencias" element={<Preferencias />} />
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="privacidade" element={<Privacidade />} />
+          <Route path="auditoria" element={<Auditoria />} />
         </Route>
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Route>
