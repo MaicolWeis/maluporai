@@ -70,8 +70,8 @@ export function NovoClienteModal({ aberto, onFechar, onCriado }: Props) {
     <Modal titulo="Novo cliente" aberto={aberto} onFechar={fechar}>
       <form onSubmit={submit} className="space-y-4">
         <Input label="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
-        <Input label="Telefone" required value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-        <Input label="CPF (opcional)" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+        <Input label="Telefone" type="tel" required value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+        <Input label="CPF (opcional)" inputMode="numeric" value={cpf} onChange={(e) => setCpf(e.target.value)} />
         <Input label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <div className="flex gap-2">
           <div className="flex-1">

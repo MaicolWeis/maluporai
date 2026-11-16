@@ -101,7 +101,7 @@ export function Usuarios() {
       ) : usuarios.length === 0 ? (
         <EmptyState titulo="Nenhum usuário ainda" descricao="Convide alguém pra começar." />
       ) : (
-        <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
+        <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               <tr>

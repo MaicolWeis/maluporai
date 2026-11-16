@@ -58,7 +58,40 @@ export function Clientes() {
           descricao="Cadastre o primeiro cliente pra começar a organizar as viagens."
         />
       ) : (
-        <div className="bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
+        <>
+        <ul className="md:hidden space-y-2">
+          {clientes.map((c) => (
+            <li key={c.id}>
+              <button
+                type="button"
+                onClick={() => setClienteSelecionadoId(c.id)}
+                className="w-full text-left bg-white rounded-xl border border-slate-200 shadow-card p-3 active:bg-slate-50"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold text-slate-900">
+                    {c.nome}
+                    {c.anonimizadoEm && <span className="ml-1 text-xs font-normal text-slate-400">(anonimizado)</span>}
+                  </p>
+                  {c.consentimentoMarketing && (
+                    <Pill cls="bg-emerald-50 text-emerald-700 border border-emerald-200">Marketing</Pill>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {c.telefone}
+                  {c.cidade ? ` · ${c.cidade}${c.uf ? `/${c.uf}` : ''}` : ''}
+                </p>
+                {c.viagens.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {c.viagens.map((v) => (
+                      <Pill key={v.id}>{v.nome}</Pill>
+                    ))}
+                  </div>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden md:block bg-white rounded-xl border border-stone-200 shadow-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               <tr>
@@ -111,6 +144,7 @@ export function Clientes() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <NovoClienteModal aberto={modalAberto} onFechar={() => setModalAberto(false)} onCriado={() => carregar(busca)} />

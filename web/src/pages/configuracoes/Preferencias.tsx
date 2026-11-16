@@ -127,7 +127,7 @@ export function Preferencias() {
             value={form.textoTermoInscricao}
             onChange={(e) => setForm({ ...form, textoTermoInscricao: e.target.value })}
             rows={4}
-            className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+            className="mt-1 w-full border border-stone-300 rounded-lg px-3 py-2 text-base md:text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
           />
         </label>
       </div>
