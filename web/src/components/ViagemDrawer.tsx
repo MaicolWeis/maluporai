@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
@@ -28,6 +28,7 @@ import { EmptyState } from './EmptyState';
 import { Input } from './Input';
 import { MoneyInput } from './MoneyInput';
 import { NovoClienteModal } from './NovoClienteModal';
+import { PesquisaClienteModal } from './PesquisaClienteModal';
 import { Pill } from './Pill';
 import { Select } from './Select';
 
@@ -762,8 +763,7 @@ function FormInscricao({
   vagasRestantes: number;
   onCriado: () => void;
 }) {
-  const [busca, setBusca] = useState('');
-  const [resultados, setResultados] = useState<ClienteListItem[]>([]);
+  const [pesquisaAberta, setPesquisaAberta] = useState(false);
   const [clienteSelecionado, setClienteSelecionado] = useState<{ id: string; nome: string; telefone: string } | null>(
     null,
   );
@@ -780,19 +780,6 @@ function FormInscricao({
   const [enviando, setEnviando] = useState(false);
 
   const idsJaInscritos = new Set(inscritos.filter((i) => i.status !== 'cancelada').map((i) => i.cliente.id));
-
-  useEffect(() => {
-    if (!busca.trim()) {
-      setResultados([]);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      const { data } = await api.get('/clientes', { params: { busca } });
-      setResultados(data.clientes.filter((c: ClienteListItem) => !idsJaInscritos.has(c.id)));
-    }, 300);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [busca]);
 
   useEffect(() => {
     if (valorEditadoManualmente) return;
@@ -838,30 +825,15 @@ function FormInscricao({
     <form onSubmit={submit} className="border border-stone-200 rounded-lg p-3 space-y-3 mt-2">
       {!clienteSelecionado ? (
         <div>
-          <Input
-            label="Buscar cliente"
-            placeholder="Nome ou telefone"
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-          />
-          {resultados.length > 0 && (
-            <div className="mt-1 border border-stone-200 rounded-lg divide-y divide-stone-100 max-h-40 overflow-y-auto">
-              {resultados.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => {
-                    setClienteSelecionado(c);
-                    setBusca('');
-                    setResultados([]);
-                  }}
-                  className="block w-full text-left px-3 py-2 text-sm hover:bg-stone-50"
-                >
-                  {c.nome} — {c.telefone}
-                </button>
-              ))}
-            </div>
-          )}
+          <span className="block text-xs text-zinc-500 mb-1">Cliente</span>
+          <button
+            type="button"
+            onClick={() => setPesquisaAberta(true)}
+            className="w-full h-11 md:h-9 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-left text-base md:text-sm text-slate-400 hover:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+          >
+            <Search size={15} className="text-slate-400" />
+            <span className="flex-1">Pesquisar cliente cadastrado…</span>
+          </button>
           <button
             type="button"
             onClick={() => setModalNovoClienteAberto(true)}
@@ -942,6 +914,16 @@ function FormInscricao({
         inválido — o navegador "achata" o aninhamento e o clique em
         "Criar cliente" acaba submetendo o form de fora nativamente
         (sem passar pelo onSubmit do React), recarregando a página. */}
+    <PesquisaClienteModal
+      aberto={pesquisaAberta}
+      onFechar={() => setPesquisaAberta(false)}
+      idsIndisponiveis={idsJaInscritos}
+      onSelecionar={(c) => setClienteSelecionado(c)}
+      onCadastrarNovo={() => {
+        setPesquisaAberta(false);
+        setModalNovoClienteAberto(true);
+      }}
+    />
     <NovoClienteModal
       aberto={modalNovoClienteAberto}
       onFechar={() => setModalNovoClienteAberto(false)}
