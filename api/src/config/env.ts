@@ -17,6 +17,9 @@ const envSchema = z
     // Quantos proxies confiáveis ficam na frente da API (Express "trust proxy").
     // Vercel (rewrite /api) + borda do Railway = 2. Só aplicado em produção.
     TRUST_PROXY: z.coerce.number().int().min(0).default(1),
+    // Segredo compartilhado com a Vercel (transform em web/vercel.json). Quando
+    // definido, a API só aceita requisições vindas pelo proxy da Vercel.
+    ORIGIN_SECRET: z.string().min(32).optional(),
     // EmailService: driver console (só loga) ou Resend. Padrão: resend em
     // produção, console fora dela. EMAIL_DRIVER=console em produção é opção
     // explícita para ambiente de teste (links aparecem nos logs).
