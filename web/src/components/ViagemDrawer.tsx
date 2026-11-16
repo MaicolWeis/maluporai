@@ -24,6 +24,7 @@ import { Button } from './Button';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
 import { Input } from './Input';
+import { MoneyInput } from './MoneyInput';
 import { NovoClienteModal } from './NovoClienteModal';
 import { Pill } from './Pill';
 import { Select } from './Select';
@@ -307,22 +308,16 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
       />
       <div className="flex gap-2">
         <div className="flex-1">
-          <Input
+          <MoneyInput
             label="Preço titular (R$)"
-            type="number"
-            min={0}
-            step="0.01"
             required
             value={form.precoTitular}
             onChange={(e) => setForm({ ...form, precoTitular: e.target.value })}
           />
         </div>
         <div className="flex-1">
-          <Input
+          <MoneyInput
             label="Preço acompanhante (R$)"
-            type="number"
-            min={0}
-            step="0.01"
             value={form.precoAcompanhante}
             onChange={(e) => setForm({ ...form, precoAcompanhante: e.target.value })}
           />
@@ -446,11 +441,8 @@ function Hospedagem({
               />
             </div>
           </div>
-          <Input
+          <MoneyInput
             label="Valor negociado (R$)"
-            type="number"
-            min={0}
-            step="0.01"
             value={form.valorNegociado}
             onChange={(e) => setForm({ ...form, valorNegociado: e.target.value })}
           />
@@ -558,11 +550,8 @@ function AtracaoSecao({
             <option value="refeicao">Refeição</option>
             <option value="outro">Outro</option>
           </Select>
-          <Input
+          <MoneyInput
             label="Valor de entrada (R$)"
-            type="number"
-            min={0}
-            step="0.01"
             value={form.valorEntrada}
             onChange={(e) => setForm({ ...form, valorEntrada: e.target.value })}
           />
@@ -925,11 +914,8 @@ function FormInscricao({
         </div>
       )}
 
-      <Input
+      <MoneyInput
         label="Valor total (R$)"
-        type="number"
-        min={0}
-        step="0.01"
         value={valorTotal}
         onChange={(e) => {
           setValorEditadoManualmente(true);
@@ -1176,11 +1162,8 @@ function InscricaoCard({
             />
             Seguro viagem
           </label>
-          <Input
+          <MoneyInput
             label="Valor total (R$)"
-            type="number"
-            min={0}
-            step="0.01"
             value={form.valorTotal}
             onChange={(e) => setForm({ ...form, valorTotal: e.target.value })}
           />
@@ -1249,11 +1232,8 @@ function FormPagamento({
       <div>
         <div className="flex items-end gap-2">
           <div className="flex-1">
-            <Input
+            <MoneyInput
               label="Valor (R$)"
-              type="number"
-              min={0}
-              step="0.01"
               required
               value={valor}
               onChange={(e) => {

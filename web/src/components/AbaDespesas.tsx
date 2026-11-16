@@ -7,6 +7,7 @@ import { Button } from './Button';
 import { EmptyState } from './EmptyState';
 import { ComprovanteInline } from './FileUpload';
 import { Input } from './Input';
+import { MoneyInput } from './MoneyInput';
 import { Pill } from './Pill';
 import { Select } from './Select';
 
@@ -210,11 +211,8 @@ function FormDespesa({
             }}
           />
         </div>
-        <Input
+        <MoneyInput
           label="Valor (R$)"
-          type="number"
-          min={0.01}
-          step="0.01"
           required
           value={valor}
           onChange={(e) => {
