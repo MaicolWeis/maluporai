@@ -12,7 +12,6 @@ export const atualizarEmpresaSchema = z
 
 export const atualizarPreferenciasSchema = z
   .object({
-    logoUrl: z.string().trim().url('URL inválida').nullable().optional(),
     corPrimaria: z.string().trim().min(1).nullable().optional(),
     formasPagamento: z.array(z.string().trim().min(1)).optional(),
     categoriasDespesa: z.array(z.string().trim().min(1)).optional(),

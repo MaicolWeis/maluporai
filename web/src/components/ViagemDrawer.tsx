@@ -18,6 +18,7 @@ import type {
 } from '../types/viagem';
 import { AbaDespesas } from './AbaDespesas';
 import { AbaFinanceiro } from './AbaFinanceiro';
+import { ComprovanteInline } from './FileUpload';
 import { Button } from './Button';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
@@ -1107,6 +1108,14 @@ function InscricaoCard({
                     {formatDataCivil(p.dataPagamento)} — {p.forma}
                     {p.parcelas && p.parcelas > 1 ? ` (${p.parcelas}x)` : ''} — {formatBRL(p.valor)}
                   </span>
+                  <span className="inline-flex items-center gap-2">
+                  <ComprovanteInline
+                    finalidade="comprovante_pagamento"
+                    entidadeId={p.id}
+                    referencia={p.comprovanteUrl}
+                    podeEditar={podeEditar}
+                    onAlterado={carregarPagamentos}
+                  />
                   {user?.papel === 'admin' && (
                     <button
                       type="button"
@@ -1117,6 +1126,7 @@ function InscricaoCard({
                       <X size={14} />
                     </button>
                   )}
+                  </span>
                 </li>
               ))}
             </ul>

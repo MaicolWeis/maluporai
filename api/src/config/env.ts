@@ -22,6 +22,10 @@ const envSchema = z
     // explícita para ambiente de teste (links aparecem nos logs).
     EMAIL_DRIVER: z.enum(['console', 'resend']).optional(),
     RESEND_API_KEY: z.string().optional(),
+    // Supabase Storage (P8.5) — opcional: sem ele, uploads ficam indisponíveis
+    // em produção (503) e usam driver em memória em dev/test.
+    SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_SERVICE_KEY: z.string().min(20).optional(),
     EMAIL_FROM: z.string().email().optional(),
   })
   .superRefine((val, ctx) => {
