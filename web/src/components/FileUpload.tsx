@@ -1,13 +1,16 @@
-import { Paperclip, Upload, X } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { api } from '../lib/api';
+import { Camera, Paperclip, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { api } from "../lib/api";
 
-export type Finalidade = 'comprovante_pagamento' | 'comprovante_despesa' | 'logo';
+export type Finalidade =
+  "comprovante_pagamento" | "comprovante_despesa" | "logo";
 
 const TAMANHO_MAXIMO = 5 * 1024 * 1024;
 
 function mensagemErro(err: any) {
-  return err?.response?.data?.error?.message ?? 'Não foi possível enviar o arquivo.';
+  return (
+    err?.response?.data?.error?.message ?? "Não foi possível enviar o arquivo."
+  );
 }
 
 /**
@@ -15,9 +18,11 @@ function mensagemErro(err: any) {
  * do await pra não ser barrada pelo bloqueador de pop-up.
  */
 export async function abrirArquivo(referencia: string) {
-  const aba = window.open('', '_blank');
+  const aba = window.open("", "_blank");
   try {
-    const { data } = await api.get('/uploads/signed-url', { params: { path: referencia } });
+    const { data } = await api.get("/uploads/signed-url", {
+      params: { path: referencia },
+    });
     if (aba) aba.location.href = data.url;
     else window.location.href = data.url;
   } catch (err) {
@@ -26,22 +31,91 @@ export async function abrirArquivo(referencia: string) {
   }
 }
 
-async function enviar(finalidade: Finalidade, entidadeId: string | undefined, arquivo: File, onProgresso: (p: number) => void) {
+async function enviar(
+  finalidade: Finalidade,
+  entidadeId: string | undefined,
+  arquivo: File,
+  onProgresso: (p: number) => void,
+) {
   const form = new FormData();
-  form.append('finalidade', finalidade);
-  if (entidadeId) form.append('entidadeId', entidadeId);
-  form.append('arquivo', arquivo);
-  const { data } = await api.post('/uploads', form, {
-    onUploadProgress: (e) => e.total && onProgresso(Math.round((e.loaded / e.total) * 100)),
+  form.append("finalidade", finalidade);
+  if (entidadeId) form.append("entidadeId", entidadeId);
+  form.append("arquivo", arquivo);
+  const { data } = await api.post("/uploads", form, {
+    onUploadProgress: (e) =>
+      e.total && onProgresso(Math.round((e.loaded / e.total) * 100)),
   });
   return data.referencia as string;
 }
 
+const LADO_MAXIMO = 2000;
+const COMPRIMIR_ACIMA_DE = 1.5 * 1024 * 1024;
+
+function carregarImagem(arquivo: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(arquivo);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("imagem ilegível"));
+    };
+    img.src = url;
+  });
+}
+
+/**
+ * Foto do celular vem grande (4–12 MB) e às vezes em HEIC: redimensiona para
+ * no máximo 2000 px e regrava em JPEG antes de enviar. Regravar também descarta
+ * os metadados EXIF (inclusive a localização GPS da foto).
+ */
+export async function prepararImagem(arquivo: File): Promise<File> {
+  const ehImagem =
+    arquivo.type.startsWith("image/") || /\.(heic|heif)$/i.test(arquivo.name);
+  const formatoAceito = ["image/jpeg", "image/png", "image/webp"].includes(
+    arquivo.type,
+  );
+  if (!ehImagem || (formatoAceito && arquivo.size <= COMPRIMIR_ACIMA_DE))
+    return arquivo;
+  try {
+    const img = await carregarImagem(arquivo);
+    const escala = Math.min(
+      1,
+      LADO_MAXIMO / Math.max(img.naturalWidth, img.naturalHeight),
+    );
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * escala);
+    canvas.height = Math.round(img.naturalHeight * escala);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return arquivo;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((r) =>
+      canvas.toBlob(r, "image/jpeg", 0.82),
+    );
+    if (!blob) return arquivo;
+    const nome = arquivo.name.replace(/\.[^.]+$/, "") || "foto";
+    return new File([blob], `${nome}.jpg`, { type: "image/jpeg" });
+  } catch {
+    return arquivo;
+  }
+}
+
 function validarLocal(arquivo: File, aceitaPdf: boolean) {
-  const tipos = ['image/jpeg', 'image/png', 'image/webp', ...(aceitaPdf ? ['application/pdf'] : [])];
-  if (!tipos.includes(arquivo.type)) return aceitaPdf ? 'Envie JPG, PNG, WEBP ou PDF' : 'Envie JPG, PNG ou WEBP';
-  if (arquivo.size > TAMANHO_MAXIMO) return 'Arquivo maior que 5 MB';
-  return '';
+  const tipos = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    ...(aceitaPdf ? ["application/pdf"] : []),
+  ];
+  if (!tipos.includes(arquivo.type))
+    return aceitaPdf ? "Envie JPG, PNG, WEBP ou PDF" : "Envie JPG, PNG ou WEBP";
+  if (arquivo.size > TAMANHO_MAXIMO) return "Arquivo maior que 5 MB";
+  return "";
 }
 
 interface Props {
@@ -54,19 +128,29 @@ interface Props {
 }
 
 /** Área de arrastar-e-soltar + clique, com prévia de imagem, progresso e erro. */
-export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado, rotulo }: Props) {
+export function FileUpload({
+  finalidade,
+  entidadeId,
+  aceitaPdf = true,
+  onEnviado,
+  rotulo,
+}: Props) {
   const input = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
   const [arrastando, setArrastando] = useState(false);
   const [progresso, setProgresso] = useState<number | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [erro, setErro] = useState('');
+  const [erro, setErro] = useState("");
 
-  const processar = async (arquivo: File | undefined) => {
-    if (!arquivo) return;
-    setErro('');
+  const processar = async (original: File | undefined) => {
+    if (!original) return;
+    setErro("");
+    const arquivo = await prepararImagem(original);
     const invalido = validarLocal(arquivo, aceitaPdf);
     if (invalido) return setErro(invalido);
-    setPreview(arquivo.type.startsWith('image/') ? URL.createObjectURL(arquivo) : null);
+    setPreview(
+      arquivo.type.startsWith("image/") ? URL.createObjectURL(arquivo) : null,
+    );
     setProgresso(0);
     try {
       onEnviado(await enviar(finalidade, entidadeId, arquivo, setProgresso));
@@ -74,17 +158,28 @@ export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado
       setErro(mensagemErro(err));
     } finally {
       setProgresso(null);
-      if (input.current) input.current.value = '';
+      if (input.current) input.current.value = "";
+      if (camera.current) camera.current.value = "";
     }
   };
 
   return (
-    <div>
+    <div className="space-y-2">
+      {finalidade !== "logo" && (
+        <button
+          type="button"
+          disabled={progresso != null}
+          onClick={() => camera.current?.click()}
+          className="md:hidden w-full h-11 inline-flex items-center justify-center gap-2 rounded-md bg-brand text-white text-sm font-semibold disabled:opacity-50"
+        >
+          <Camera size={16} /> Tirar foto do comprovante
+        </button>
+      )}
       <div
         role="button"
         tabIndex={0}
         onClick={() => input.current?.click()}
-        onKeyDown={(e) => e.key === 'Enter' && input.current?.click()}
+        onKeyDown={(e) => e.key === "Enter" && input.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
           setArrastando(true);
@@ -96,11 +191,17 @@ export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado
           processar(e.dataTransfer.files[0]);
         }}
         className={`flex items-center gap-3 border-2 border-dashed rounded-lg px-4 py-3 cursor-pointer transition-colors ${
-          arrastando ? 'border-brand bg-amber-50' : 'border-stone-300 hover:border-brand'
+          arrastando
+            ? "border-brand bg-brand-soft"
+            : "border-stone-300 hover:border-brand"
         }`}
       >
         {preview ? (
-          <img src={preview} alt="" className="h-10 w-10 object-cover rounded" />
+          <img
+            src={preview}
+            alt=""
+            className="h-10 w-10 object-cover rounded"
+          />
         ) : (
           <Upload size={18} className="text-zinc-400" />
         )}
@@ -109,12 +210,20 @@ export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado
             <>
               Enviando… {progresso}%
               <div className="h-1 bg-stone-200 rounded mt-1 overflow-hidden">
-                <div className="h-full bg-brand" style={{ width: `${progresso}%` }} />
+                <div
+                  className="h-full bg-brand"
+                  style={{ width: `${progresso}%` }}
+                />
               </div>
             </>
           ) : (
-            (rotulo ?? 'Arraste o arquivo ou clique para escolher') +
-            (aceitaPdf ? ' (JPG, PNG, WEBP ou PDF, até 5 MB)' : ' (JPG, PNG ou WEBP, até 5 MB)')
+            (rotulo ??
+              (window.matchMedia("(pointer: coarse)").matches
+                ? "Toque para escolher um arquivo"
+                : "Arraste o arquivo ou clique para escolher")) +
+            (aceitaPdf
+              ? " (JPG, PNG, WEBP ou PDF, até 5 MB)"
+              : " (JPG, PNG ou WEBP, até 5 MB)")
           )}
         </div>
       </div>
@@ -122,7 +231,15 @@ export function FileUpload({ finalidade, entidadeId, aceitaPdf = true, onEnviado
         ref={input}
         type="file"
         hidden
-        accept={aceitaPdf ? 'image/jpeg,image/png,image/webp,application/pdf' : 'image/jpeg,image/png,image/webp'}
+        accept={aceitaPdf ? "image/*,application/pdf" : "image/*"}
+        onChange={(e) => processar(e.target.files?.[0])}
+      />
+      <input
+        ref={camera}
+        type="file"
+        hidden
+        accept="image/*"
+        capture="environment"
         onChange={(e) => processar(e.target.files?.[0])}
       />
       {erro && <p className="text-xs text-red-600 mt-1">{erro}</p>}
@@ -141,7 +258,7 @@ export function ComprovanteInline({
   podeEditar,
   onAlterado,
 }: {
-  finalidade: 'comprovante_pagamento' | 'comprovante_despesa';
+  finalidade: "comprovante_pagamento" | "comprovante_despesa";
   entidadeId: string;
   referencia: string | null;
   podeEditar: boolean;
@@ -150,8 +267,9 @@ export function ComprovanteInline({
   const input = useRef<HTMLInputElement>(null);
   const [enviando, setEnviando] = useState(false);
 
-  const escolher = async (arquivo: File | undefined) => {
-    if (!arquivo) return;
+  const escolher = async (original: File | undefined) => {
+    if (!original) return;
+    const arquivo = await prepararImagem(original);
     const invalido = validarLocal(arquivo, true);
     if (invalido) return window.alert(invalido);
     setEnviando(true);
@@ -162,13 +280,13 @@ export function ComprovanteInline({
       window.alert(mensagemErro(err));
     } finally {
       setEnviando(false);
-      if (input.current) input.current.value = '';
+      if (input.current) input.current.value = "";
     }
   };
 
   const remover = async () => {
-    if (!window.confirm('Remover o comprovante anexado?')) return;
-    await api.delete('/uploads', { data: { finalidade, entidadeId } });
+    if (!window.confirm("Remover o comprovante anexado?")) return;
+    await api.delete("/uploads", { data: { finalidade, entidadeId } });
     onAlterado();
   };
 
@@ -189,14 +307,19 @@ export function ComprovanteInline({
           type="button"
           disabled={enviando}
           onClick={() => input.current?.click()}
-          title={referencia ? 'Substituir comprovante' : 'Anexar comprovante'}
+          title={referencia ? "Substituir comprovante" : "Anexar comprovante"}
           className="text-zinc-400 hover:text-zinc-900 disabled:opacity-50 text-[11px] font-semibold"
         >
-          {enviando ? '…' : referencia ? 'trocar' : <Upload size={14} />}
+          {enviando ? "…" : referencia ? "trocar" : <Upload size={14} />}
         </button>
       )}
       {podeEditar && referencia && (
-        <button type="button" onClick={remover} title="Remover comprovante" className="text-zinc-400 hover:text-red-600">
+        <button
+          type="button"
+          onClick={remover}
+          title="Remover comprovante"
+          className="text-zinc-400 hover:text-red-600"
+        >
           <X size={12} />
         </button>
       )}
@@ -204,7 +327,7 @@ export function ComprovanteInline({
         ref={input}
         type="file"
         hidden
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept="image/*,application/pdf"
         onChange={(e) => escolher(e.target.files?.[0])}
       />
     </span>

@@ -22,6 +22,8 @@ finalidade, fornecedor ou prazo mudar. Última revisão: novembro/2026 (P11).
 | Consentimento de marketing + data | Viajante | Envio de comunicações | Consentimento (art. 7º, I) | Até revogação ou anonimização | Postgres |
 | Inscrições, valores, pagamentos | Viajante | Gestão financeira do tenant | Execução de contrato / obrigação legal (art. 7º, II) | Preservados após anonimização (sem identificar o titular) | Postgres |
 | Comprovantes de pagamento/despesa | Viajante / fornecedores | Conferência financeira | Execução de contrato / obrigação legal | Enquanto o pagamento/despesa existir | Supabase Storage (São Paulo), bucket privado |
+| Embarque (horário em que o guia marcou) | Viajante | Conferir quem embarcou no dia da viagem | Execução de contrato / proteção da vida | Idem (vinculado à inscrição) | Postgres |
+| Cópia local da lista de embarque: nome, telefone, nome do acompanhante, situação do pagamento (sem valores) e embarque — **sem CPF/documentos/e-mail/valores** | Viajante / acompanhante | Consulta e marcação de embarque sem internet | Execução de contrato | Apagada no logout, na troca de usuário e 2 dias após o fim da viagem | `localStorage` do aparelho do usuário que abriu a aba Embarque |
 | Nome, e-mail, senha (hash argon2id), papel, último login | Usuário da plataforma | Acesso ao sistema | Execução de contrato | Enquanto a conta existir | Postgres |
 | Aceite dos termos (versão + data) | Usuário admin | Comprovar aceite | Execução de contrato / exercício regular de direitos | Enquanto a conta existir | Postgres |
 | Logs de auditoria (ação, usuário, IP, data) | Usuários | Segurança, rastreabilidade | Legítimo interesse (art. 7º, IX) / obrigação legal | Indefinido hoje — **definir prazo** (sugestão: 5 anos) | Postgres (append-only) |
@@ -53,7 +55,9 @@ cláusula/mecanismo utilizado. **Pendente.**
 RLS no Postgres por tenant + role sem BYPASSRLS; JWT de curta duração com refresh rotativo em cookie
 httpOnly/SameSite=Strict; argon2id; CPF criptografado; buckets privados com URL assinada de 10 min e
 fronteira por tenant; rate limit por rota; CSP e cabeçalhos de segurança; trilha de auditoria append-only;
-validação de entrada com Zod; Dependabot + `npm audit` no CI.
+validação de entrada com Zod; Dependabot + `npm audit` no CI. PWA: o service worker só guarda a
+casca do app (HTML/JS/CSS/fontes), nunca respostas da API; fotos de comprovante são regravadas em JPEG no
+aparelho antes do upload, descartando EXIF/GPS.
 
 ## Pendências
 

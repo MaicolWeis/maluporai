@@ -38,6 +38,22 @@ export const cancelarInscricaoSchema = z.object({
   motivo: z.string().trim().min(1, 'Informe o motivo do cancelamento'),
 });
 
+const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
+
+export const embarqueSchema = z.object({
+  embarcado: z.boolean({ required_error: 'Informe se embarcou' }),
+  // Marcação feita sem internet e sincronizada depois: o app manda o horário
+  // real em que o guia tocou. Aceita até 7 dias para trás e 5 min de relógio
+  // adiantado do celular; fora disso vale o horário do servidor.
+  em: z.coerce
+    .date()
+    .refine((d) => d.getTime() <= Date.now() + 5 * 60 * 1000 && d.getTime() >= Date.now() - SETE_DIAS_MS, {
+      message: 'Horário de embarque fora do intervalo aceito',
+    })
+    .optional(),
+});
+
+export type EmbarqueInput = z.infer<typeof embarqueSchema>;
 export type CriarInscricaoInput = z.infer<typeof criarInscricaoSchema>;
 export type AtualizarInscricaoInput = z.infer<typeof atualizarInscricaoSchema>;
 export type CancelarInscricaoInput = z.infer<typeof cancelarInscricaoSchema>;

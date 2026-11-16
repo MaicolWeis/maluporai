@@ -69,7 +69,23 @@ export function PoliticaPrivacidade() {
               <li>Isolamento entre organizadores no próprio banco de dados (cada um só acessa os próprios dados).</li>
               <li>CPF criptografado; arquivos em armazenamento privado com links temporários de 10 minutos.</li>
               <li>Conexões sempre criptografadas (HTTPS) e trilha de auditoria de todas as alterações.</li>
+              <li>
+                Fotos de comprovante tiradas pelo celular são redimensionadas no próprio aparelho antes do envio, o que
+                também remove os metadados da foto (como a localização).
+              </li>
             </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="font-bold text-zinc-900">Dados guardados no celular (lista de embarque)</h2>
+            <p>
+              Para o guia conferir o embarque mesmo sem internet, a lista de embarque de uma viagem fica salva no
+              navegador do aparelho de quem a abriu, com o mínimo necessário: nome do viajante, telefone, nome do
+              acompanhante, se já pagou (sem valores) e se já embarcou. CPF, documentos, e-mail e valores nunca são
+              guardados no aparelho. A lista é apagada quando a pessoa sai da conta, quando outro usuário entra no
+              mesmo aparelho e, de qualquer forma, dois dias após o fim da viagem. O app não guarda outros dados
+              pessoais no aparelho.
+            </p>
           </section>
 
           <section className="space-y-2">

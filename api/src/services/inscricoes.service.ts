@@ -9,10 +9,16 @@ import {
   findInscricaoPorClienteEViagem,
   listInscricoesConfirmadasParaOcupacao,
   listInscricoesPorViagem,
+  marcarEmbarqueRepo,
   updateInscricao,
 } from '../repositories/inscricao.repository.js';
 import { garantirViagem } from './viagens.service.js';
-import type { AtualizarInscricaoInput, CancelarInscricaoInput, CriarInscricaoInput } from '../schemas/inscricoes.schema.js';
+import type {
+  AtualizarInscricaoInput,
+  CancelarInscricaoInput,
+  CriarInscricaoInput,
+  EmbarqueInput,
+} from '../schemas/inscricoes.schema.js';
 
 interface Ator {
   userId: string;
@@ -47,6 +53,7 @@ function toInscricaoDTO(inscricao: {
   nomeAcompanhante: string | null;
   seguroViagem: boolean;
   valorTotal: Prisma.Decimal;
+  embarcadoEm: Date | null;
   createdAt: Date;
   cliente: { id: string; nome: string; telefone: string };
   pagamentos: { valor: Prisma.Decimal; forma: string }[];
@@ -63,6 +70,7 @@ function toInscricaoDTO(inscricao: {
     valorPago,
     statusPagamento: derivarStatusPagamento(inscricao.valorTotal, valorPago),
     formaPagamentoPredominante: formaPredominante(inscricao.pagamentos),
+    embarcadoEm: inscricao.embarcadoEm,
     createdAt: inscricao.createdAt,
   };
 }
@@ -91,13 +99,16 @@ async function comTravaDeCapacidade<T>(operacao: () => Promise<T>): Promise<T> {
 export async function listarInscricoesDaViagem(viagemId: string) {
   const viagem = await garantirViagem(viagemId);
   const inscricoes = await listInscricoesPorViagem(viagemId);
-  const pessoasConfirmadas = contarPessoas(inscricoes.filter((i) => i.status === 'confirmada'));
+  const confirmadas = inscricoes.filter((i) => i.status === 'confirmada');
+  const pessoasConfirmadas = contarPessoas(confirmadas);
 
   return {
     inscricoes: inscricoes.map(toInscricaoDTO),
     capacidade: viagem.capacidade,
     pessoasConfirmadas,
     vagasRestantes: Math.max(0, viagem.capacidade - pessoasConfirmadas),
+    // Embarque conta pessoas (titular + acompanhante), como a ocupação.
+    pessoasEmbarcadas: contarPessoas(confirmadas.filter((i) => i.embarcadoEm !== null)),
   };
 }
 
@@ -212,4 +223,27 @@ export async function cancelarInscricao(id: string, input: CancelarInscricaoInpu
   });
 
   return toInscricaoDTO(cancelada);
+}
+
+/** Embarque só faz sentido para inscrição confirmada de viagem em andamento. */
+const STATUS_VIAGEM_PARA_EMBARQUE = new Set(['inscricoes', 'confirmada']);
+
+export async function marcarEmbarque(id: string, input: EmbarqueInput, ator: Ator, meta: RequestMeta) {
+  const inscricao = await garantirInscricao(id);
+  if (inscricao.status !== 'confirmada') {
+    throw new AppError(409, 'INSCRICAO_NAO_CONFIRMADA', 'Só inscrições confirmadas podem embarcar');
+  }
+  if (!STATUS_VIAGEM_PARA_EMBARQUE.has(inscricao.viagem.status)) {
+    throw new AppError(409, 'VIAGEM_SEM_EMBARQUE', 'O embarque só pode ser marcado em viagem confirmada ou com inscrições abertas');
+  }
+
+  // Idempotente: marcar de novo não troca o horário do primeiro embarque.
+  const embarcadoEm = input.embarcado ? (inscricao.embarcadoEm ?? input.em ?? new Date()) : null;
+  const atualizada = await marcarEmbarqueRepo(id, embarcadoEm);
+  await auditarInscricao('update', id, ator, meta, {
+    embarque: input.embarcado ? 'embarcou' : 'desfeito',
+    embarcadoEm: embarcadoEm?.toISOString() ?? null,
+    ...(input.em && { sincronizadoDepois: true }),
+  });
+  return toInscricaoDTO(atualizada);
 }

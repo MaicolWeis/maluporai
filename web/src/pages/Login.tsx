@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { listasSalvas } from '../lib/embarqueOffline';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export function Login() {
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
+  const temListasSalvas = listasSalvas().length > 0;
   const { setSession } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,7 +27,9 @@ export function Login() {
       setSession(data.user, data.accessToken);
       navigate(from, { replace: true });
     } catch (err: any) {
-      if (err.response?.status === 429) {
+      if (!err.response) {
+        setErro('Sem conexão com a internet.');
+      } else if (err.response?.status === 429) {
         setErro('Muitas tentativas. Tente novamente em alguns minutos.');
       } else {
         setErro(err.response?.data?.error?.message ?? 'Não foi possível entrar. Tente novamente.');
@@ -71,6 +75,14 @@ export function Login() {
               Criar conta
             </Link>
           </div>
+          {temListasSalvas && (
+            <Link
+              to="/embarque-offline"
+              className="block text-center text-xs text-slate-500 border-t border-slate-100 pt-3 hover:text-brand"
+            >
+              Sem internet? Ver listas de embarque salvas neste aparelho
+            </Link>
+          )}
         </form>
       </div>
     </div>

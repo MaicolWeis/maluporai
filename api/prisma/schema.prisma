@@ -314,6 +314,7 @@ model Inscricao {
   numeroApolice      String?         @map("numero_apolice")
   valorTotal         Decimal         @map("valor_total") @db.Decimal(10, 2)
   status             InscricaoStatus @default(confirmada)
+  embarcadoEm        DateTime?       @map("embarcado_em")
   createdAt          DateTime        @default(now()) @map("created_at")
   updatedAt          DateTime        @updatedAt @map("updated_at")
 

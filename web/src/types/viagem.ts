@@ -63,6 +63,7 @@ export interface InscricaoItem {
   valorPago: string;
   statusPagamento: StatusPagamento;
   formaPagamentoPredominante: string | null;
+  embarcadoEm: string | null;
   createdAt: string;
 }
 
@@ -71,6 +72,7 @@ export interface InscricoesDaViagem {
   capacidade: number;
   pessoasConfirmadas: number;
   vagasRestantes: number;
+  pessoasEmbarcadas: number;
 }
 
 export interface Pagamento {
