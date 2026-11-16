@@ -10,6 +10,12 @@ const SUBPROCESSADORES = [
   { nome: 'Railway', finalidade: 'Hospedagem da API e do banco de dados', local: 'Estados Unidos' },
   { nome: 'Vercel', finalidade: 'Hospedagem da interface web', local: 'Estados Unidos (rede global)' },
   { nome: 'Supabase', finalidade: 'Armazenamento de arquivos (comprovantes e logos)', local: 'Brasil (São Paulo)' },
+  {
+    nome: 'OpenStreetMap (Nominatim)',
+    finalidade: 'Localizar cidades no mapa — recebe só "cidade, estado, país", nunca dados de pessoas',
+    local: 'Europa',
+  },
+  { nome: 'CARTO', finalidade: 'Imagens do mapa exibidas no navegador (recebe o IP de quem abre o mapa)', local: 'Europa / rede global' },
   { nome: 'Resend', finalidade: 'Envio de e-mails transacionais (convites, redefinição de senha, avisos)', local: 'Estados Unidos' },
 ];
 

@@ -21,7 +21,13 @@ export const listarViagensQuerySchema = z.object({
 const viagemBaseSchema = z.object({
   nome: z.string().trim().min(2, 'Nome é obrigatório'),
   destinoCidade: z.string().trim().min(1, 'Destino é obrigatório'),
-  destinoUf: z.string().trim().length(2, 'UF inválida').toUpperCase(),
+  // Brasil: UF de 2 letras (obrigatória). Fora: estado/província livre, opcional.
+  destinoUf: z.string().trim().min(1).max(60).nullable().optional(),
+  destinoPais: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, 'País inválido'),
   dataInicio: z.coerce.date(),
   dataFim: z.coerce.date(),
   capacidade: z.coerce.number().int().min(1, 'Capacidade deve ser ao menos 1'),
@@ -37,15 +43,30 @@ function datasEmOrdem(inicio?: Date, fim?: Date) {
   return !inicio || !fim || fim >= inicio;
 }
 
-export const criarViagemSchema = viagemBaseSchema.refine((v) => datasEmOrdem(v.dataInicio, v.dataFim), {
-  message: MSG_DATAS,
-  path: ['dataFim'],
-});
+/** No Brasil a UF é obrigatória e tem 2 letras; fora, o estado é livre. */
+function ufValidaParaPais(pais?: string, uf?: string | null) {
+  if (pais === undefined) return uf === undefined || uf === null || /^[A-Za-z]{2}$/.test(uf);
+  if (pais !== 'BR') return true;
+  return !!uf && /^[A-Za-z]{2}$/.test(uf);
+}
+const MSG_UF = 'Informe a UF (2 letras) para destinos no Brasil';
+
+export const criarViagemSchema = viagemBaseSchema
+  .extend({ destinoPais: viagemBaseSchema.shape.destinoPais.default('BR') })
+  .refine((v) => datasEmOrdem(v.dataInicio, v.dataFim), { message: MSG_DATAS, path: ['dataFim'] })
+  .refine((v) => ufValidaParaPais(v.destinoPais, v.destinoUf), { message: MSG_UF, path: ['destinoUf'] })
+  .transform((v) => ({ ...v, destinoUf: v.destinoUf ? (v.destinoPais === 'BR' ? v.destinoUf.toUpperCase() : v.destinoUf) : null }));
 
 export const atualizarViagemSchema = viagemBaseSchema
   .partial()
   .refine((v) => Object.keys(v).length > 0, { message: 'Informe ao menos um campo' })
-  .refine((v) => datasEmOrdem(v.dataInicio, v.dataFim), { message: MSG_DATAS, path: ['dataFim'] });
+  .refine((v) => datasEmOrdem(v.dataInicio, v.dataFim), { message: MSG_DATAS, path: ['dataFim'] })
+  // Edição: país e UF andam juntos quando o destino muda (checado no service contra o salvo).
+  .transform((v) =>
+    v.destinoUf && (v.destinoPais === 'BR' || (v.destinoPais === undefined && v.destinoUf.length === 2))
+      ? { ...v, destinoUf: v.destinoUf.toUpperCase() }
+      : v,
+  );
 
 export const atualizarStatusViagemSchema = z.object({
   status: statusEnum,

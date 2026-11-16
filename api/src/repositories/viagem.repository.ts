@@ -68,7 +68,8 @@ export function findViagemComDetalhe(id: string) {
 interface CreateViagemInput {
   nome: string;
   destinoCidade: string;
-  destinoUf: string;
+  destinoUf: string | null;
+  destinoPais: string;
   dataInicio: Date;
   dataFim: Date;
   capacidade: number;
@@ -84,7 +85,8 @@ export function createViagem(input: CreateViagemInput) {
 interface UpdateViagemInput {
   nome?: string;
   destinoCidade?: string;
-  destinoUf?: string;
+  destinoUf?: string | null;
+  destinoPais?: string;
   dataInicio?: Date;
   dataFim?: Date;
   capacidade?: number;

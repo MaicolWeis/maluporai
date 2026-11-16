@@ -3,6 +3,7 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { requireAuth } from '../middlewares/requireAuth.js';
 import { requirePermission } from '../middlewares/requirePermission.js';
 import { tenantContext } from '../middlewares/tenantContext.js';
+import * as mapaService from '../services/mapa.service.js';
 import * as financeiroService from '../services/financeiro.service.js';
 
 /** Aninhado em /viagens/:viagemId/financeiro (ver app.ts). */
@@ -22,5 +23,15 @@ dashboardRouter.get(
   '/',
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await financeiroService.dashboard());
+  }),
+);
+
+/** GET /mapa — clientes por cidade e destinos das viagens, para o mapa da visão geral. */
+export const mapaRouter = Router();
+mapaRouter.use(requireAuth, tenantContext, requirePermission('viagens'));
+mapaRouter.get(
+  '/',
+  asyncHandler(async (_req: Request, res: Response) => {
+    res.json(await mapaService.dadosDoMapa());
   }),
 );

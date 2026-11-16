@@ -24,6 +24,9 @@ const envSchema = z
     // produção, console fora dela. EMAIL_DRIVER=console em produção é opção
     // explícita para ambiente de teste (links aparecem nos logs).
     EMAIL_DRIVER: z.enum(['console', 'resend']).optional(),
+    // Coordenadas das cidades para o mapa. Padrão: nominatim (OpenStreetMap)
+    // em dev/produção; memoria nos testes (sem rede, coordenadas fictícias).
+    GEOCODER: z.enum(['nominatim', 'memoria', 'desligado']).optional(),
     RESEND_API_KEY: z.string().optional(),
     // Supabase Storage (P8.5) — opcional: sem ele, uploads ficam indisponíveis
     // em produção (503) e usam driver em memória em dev/test.

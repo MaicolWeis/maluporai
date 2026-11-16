@@ -11,7 +11,8 @@ export interface ViagemListItem {
   id: string;
   nome: string;
   destinoCidade: string;
-  destinoUf: string;
+  destinoUf: string | null;
+  destinoPais: string;
   dataInicio: string;
   dataFim: string;
   status: ViagemStatus;
@@ -94,7 +95,8 @@ export interface ViagemDetalhe {
   id: string;
   nome: string;
   destinoCidade: string;
-  destinoUf: string;
+  destinoUf: string | null;
+  destinoPais: string;
   dataInicio: string;
   dataFim: string;
   capacidade: number;

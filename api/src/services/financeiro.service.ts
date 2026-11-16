@@ -121,6 +121,7 @@ export async function dashboard(agora = new Date()) {
         nome: v.nome,
         destinoCidade: v.destinoCidade,
         destinoUf: v.destinoUf,
+        destinoPais: v.destinoPais,
         dataInicio: v.dataInicio,
         dataFim: v.dataFim,
         status: v.status,

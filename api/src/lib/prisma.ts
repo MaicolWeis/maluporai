@@ -6,7 +6,7 @@ import { getCurrentTenantId } from './tenant-context.js';
  * Modelos que não carregam tenant_id (a raiz do isolamento) e por isso não
  * passam pelo SET LOCAL app.tenant_id nem pela injeção automática.
  */
-const TENANT_EXEMPT_MODELS = new Set<string>(['Tenant']);
+const TENANT_EXEMPT_MODELS = new Set<string>(['Tenant', 'Geocache']);
 
 const OPERATIONS_WITH_DATA = new Set(['create', 'createManyAndReturn']);
 

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { formatDestino } from '../lib/paises';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ContatoAcoes } from '../components/ContatoAcoes';
 import { EmptyState } from '../components/EmptyState';
+import { MapaClientesDestinos } from '../components/MapaClientesDestinos';
 import { type Aba, ViagemDrawer } from '../components/ViagemDrawer';
 import { api } from '../lib/api';
 import { formatBRL, formatDataCivil } from '../lib/format';
@@ -57,6 +59,8 @@ export function Dashboard() {
         <Kpi titulo="Próximas viagens" valor={String(dados.proximasViagens.length)} cls="text-zinc-900" />
       </div>
 
+      <MapaClientesDestinos onAbrirViagem={(viagemId) => setDrawer({ viagemId, aba: 'resumo' })} />
+
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Próximas viagens</h2>
         {dados.proximasViagens.length === 0 ? (
@@ -76,7 +80,7 @@ export function Dashboard() {
                   <div className="p-4">
                     <p className="font-semibold text-zinc-900">{v.nome}</p>
                     <p className="text-xs text-zinc-500">
-                      {v.destinoCidade}/{v.destinoUf} · {formatDataCivil(v.dataInicio)}{' '}
+                      {formatDestino(v)} · {formatDataCivil(v.dataInicio)}{' '}
                       <span className="text-zinc-400">({dias === 0 ? 'hoje' : `em ${dias} dia${dias > 1 ? 's' : ''}`})</span>
                     </p>
                     <div className="mt-3 mb-2">

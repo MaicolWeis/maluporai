@@ -64,7 +64,7 @@ export function findClienteComHistorico(id: string) {
     include: {
       inscricoes: {
         include: {
-          viagem: { select: { id: true, nome: true, destinoCidade: true, destinoUf: true } },
+          viagem: { select: { id: true, nome: true, destinoCidade: true, destinoUf: true, destinoPais: true } },
           pagamentos: true,
         },
         orderBy: { createdAt: 'desc' },

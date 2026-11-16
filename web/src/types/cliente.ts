@@ -11,7 +11,7 @@ export interface ClienteListItem {
 
 export interface InscricaoResumo {
   id: string;
-  viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string };
+  viagem: { id: string; nome: string; destinoCidade: string; destinoUf: string | null; destinoPais: string };
   status: 'confirmada' | 'cancelada' | 'lista_espera';
   valorTotal: string;
   valorPago: string;

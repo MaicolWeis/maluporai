@@ -5,7 +5,7 @@ import { geralRateLimit } from './middlewares/rateLimits.js';
 import helmet from 'helmet';
 import { env } from './config/env.js';
 import { despesasPorViagemRouter, despesasRouter } from './routes/despesas.routes.js';
-import { dashboardRouter, financeiroViagemRouter } from './routes/financeiro.routes.js';
+import { dashboardRouter, financeiroViagemRouter, mapaRouter } from './routes/financeiro.routes.js';
 import { uploadsRouter } from './routes/uploads.routes.js';
 import { auditoriaRouter } from './routes/auditoria.routes.js';
 import { origemVercel } from './middlewares/origemVercel.js';
@@ -56,6 +56,7 @@ export function createApp() {
   app.use('/viagens/:viagemId/despesas', despesasPorViagemRouter);
   app.use('/viagens/:viagemId/financeiro', financeiroViagemRouter);
   app.use('/dashboard', dashboardRouter);
+  app.use('/mapa', mapaRouter);
   app.use('/inscricoes/:inscricaoId/pagamentos', pagamentosPorInscricaoRouter);
   app.use('/inscricoes', inscricoesRouter);
   app.use('/pagamentos', pagamentosRouter);
