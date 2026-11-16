@@ -7,9 +7,11 @@ interface Props {
   aberto: boolean;
   onFechar: () => void;
   children: ReactNode;
+  /** md (padrão) para formulários; lg para pesquisas com tabela. */
+  largura?: 'md' | 'lg';
 }
 
-export function Modal({ titulo, aberto, onFechar, children }: Props) {
+export function Modal({ titulo, aberto, onFechar, children, largura = 'md' }: Props) {
   useEffect(() => {
     if (!aberto) return;
     const onEsc = (e: KeyboardEvent) => e.key === 'Escape' && onFechar();
@@ -22,7 +24,7 @@ export function Modal({ titulo, aberto, onFechar, children }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/40" onClick={onFechar}>
       <div
-        className="w-full max-w-md bg-white rounded-t-xl sm:rounded-xl shadow-pop border border-slate-200 overflow-hidden max-h-[92dvh] flex flex-col"
+        className={`w-full ${largura === 'lg' ? 'max-w-3xl' : 'max-w-md'} bg-white rounded-t-xl sm:rounded-xl shadow-pop border border-slate-200 overflow-hidden max-h-[92dvh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-5 py-3.5 flex items-center justify-between border-b border-slate-200">
