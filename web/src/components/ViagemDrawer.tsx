@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { STATUS_LABEL, STATUS_PILL, TRANSICOES_VALIDAS, rotuloTransicao } from '../lib/viagemStatus';
 import { formatBRL, formatDataCivil, hojeLocalISO } from '../lib/format';
 import type { ClienteListItem } from '../types/cliente';
 import type {
@@ -36,29 +37,6 @@ const ABAS: { id: Aba; label: string }[] = [
   { id: 'financeiro', label: 'Financeiro' },
 ];
 
-const STATUS_LABEL: Record<ViagemStatus, string> = {
-  planejamento: 'Planejamento',
-  inscricoes: 'Inscrições abertas',
-  confirmada: 'Confirmada',
-  concluida: 'Concluída',
-  cancelada: 'Cancelada',
-};
-
-const STATUS_PILL: Record<ViagemStatus, string> = {
-  planejamento: 'bg-stone-100 text-zinc-600 border border-stone-200',
-  inscricoes: 'bg-amber-100 text-amber-700 border border-amber-200',
-  confirmada: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  concluida: 'bg-brand text-white',
-  cancelada: 'bg-red-100 text-red-700 border border-red-200',
-};
-
-const TRANSICOES_VALIDAS: Record<ViagemStatus, ViagemStatus[]> = {
-  planejamento: ['inscricoes', 'cancelada'],
-  inscricoes: ['confirmada', 'cancelada'],
-  confirmada: ['concluida', 'cancelada'],
-  concluida: [],
-  cancelada: [],
-};
 
 const formatMoeda = formatBRL;
 const formatData = formatDataCivil;
@@ -153,14 +131,14 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
                 value=""
                 disabled={mudandoStatus}
                 onChange={(e) => mudarStatus(e.target.value as ViagemStatus)}
-                className="text-xs border border-stone-300 rounded-lg px-2 py-1 text-zinc-700 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand disabled:opacity-50"
+                className="h-8 text-xs border border-slate-200 rounded-md px-2 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand disabled:opacity-50"
               >
                 <option value="" disabled>
                   Mudar status
                 </option>
                 {transicoes.map((s) => (
                   <option key={s} value={s}>
-                    {STATUS_LABEL[s]}
+                    {rotuloTransicao(viagem.status, s)}
                   </option>
                 ))}
               </select>

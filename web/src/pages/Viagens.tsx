@@ -1,30 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
+import { Input } from '../components/Input';
 import { NovaViagemModal } from '../components/NovaViagemModal';
 import { Pill } from '../components/Pill';
+import { Select } from '../components/Select';
 import { ViagemDrawer } from '../components/ViagemDrawer';
 import { api } from '../lib/api';
 import { formatBRL, formatDataCivil } from '../lib/format';
+import { STATUS_LABEL, STATUS_PILL } from '../lib/viagemStatus';
 import type { ViagemListItem, ViagemStatus } from '../types/viagem';
 
-const STATUS_LABEL: Record<ViagemStatus, string> = {
-  planejamento: 'Planejamento',
-  inscricoes: 'Inscrições abertas',
-  confirmada: 'Confirmada',
-  concluida: 'Concluída',
-  cancelada: 'Cancelada',
-};
-
-const STATUS_PILL: Record<ViagemStatus, string> = {
-  planejamento: 'bg-stone-100 text-zinc-600 border border-stone-200',
-  inscricoes: 'bg-amber-100 text-amber-700 border border-amber-200',
-  confirmada: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  concluida: 'bg-brand text-white',
-  cancelada: 'bg-red-100 text-red-700 border border-red-200',
-};
 
 const formatMoeda = formatBRL;
+
+type FiltroStatus = 'ativas' | 'todas' | ViagemStatus;
+interface Filtros {
+  status: FiltroStatus;
+  de: string;
+  ate: string;
+}
+const FILTROS_PADRAO: Filtros = { status: 'ativas', de: '', ate: '' };
 
 function formatPeriodo(dataInicio: string, dataFim: string) {
   return `${formatDataCivil(dataInicio)} — ${formatDataCivil(dataFim)}`;
@@ -35,11 +31,17 @@ export function Viagens() {
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<string | null>(null);
+  const [filtros, setFiltros] = useState<Filtros>(FILTROS_PADRAO);
 
-  const carregar = async () => {
+  const carregar = async (f: Filtros = filtros) => {
     setCarregando(true);
     try {
-      const { data } = await api.get('/viagens');
+      const params: Record<string, string> = { porPagina: '100' };
+      if (f.status === 'todas') params.incluirArquivadas = 'true';
+      else if (f.status !== 'ativas') params.status = f.status;
+      if (f.de) params.dataInicio = f.de;
+      if (f.ate) params.dataFim = f.ate;
+      const { data } = await api.get('/viagens', { params });
       setViagens(data.viagens);
     } finally {
       setCarregando(false);
@@ -47,12 +49,15 @@ export function Viagens() {
   };
 
   useEffect(() => {
-    carregar();
-  }, []);
+    carregar(filtros);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtros]);
+
+  const filtrosAtivos = filtros.status !== 'ativas' || !!filtros.de || !!filtros.ate;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-base font-semibold text-slate-900">Viagens</h1>
           <p className="text-xs text-slate-500">Planejamento, inscrições e financeiro de cada viagem</p>
@@ -60,10 +65,52 @@ export function Viagens() {
         <Button onClick={() => setModalAberto(true)}>Nova viagem</Button>
       </div>
 
+      <div className="bg-white rounded-xl border border-slate-200 shadow-card p-3 mb-4 flex flex-wrap items-end gap-3">
+        <div className="w-48">
+          <Select
+            label="Status"
+            value={filtros.status}
+            onChange={(e) => setFiltros({ ...filtros, status: e.target.value as FiltroStatus })}
+          >
+            <option value="ativas">Ativas (sem arquivadas)</option>
+            <option value="todas">Todas, inclusive arquivadas</option>
+            {(Object.keys(STATUS_LABEL) as ViagemStatus[]).map((st) => (
+              <option key={st} value={st}>
+                {STATUS_LABEL[st]}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="w-40">
+          <Input label="Viagem de" type="date" value={filtros.de} onChange={(e) => setFiltros({ ...filtros, de: e.target.value })} />
+        </div>
+        <div className="w-40">
+          <Input
+            label="até"
+            type="date"
+            value={filtros.ate}
+            min={filtros.de || undefined}
+            onChange={(e) => setFiltros({ ...filtros, ate: e.target.value })}
+          />
+        </div>
+        {filtrosAtivos && (
+          <Button variant="ghost" onClick={() => setFiltros(FILTROS_PADRAO)}>
+            Limpar filtros
+          </Button>
+        )}
+        <span className="ml-auto self-center text-xs text-slate-500">
+          {carregando ? '…' : `${viagens.length} viage${viagens.length === 1 ? 'm' : 'ns'}`}
+        </span>
+      </div>
+
       {carregando ? (
         <p className="text-sm text-zinc-500">Carregando…</p>
       ) : viagens.length === 0 ? (
-        <EmptyState titulo="Nenhuma viagem ainda" descricao="Cadastre a primeira viagem pra começar a organizar." />
+        filtrosAtivos ? (
+          <EmptyState titulo="Nenhuma viagem encontrada" descricao="Ajuste ou limpe os filtros acima." />
+        ) : (
+          <EmptyState titulo="Nenhuma viagem ainda" descricao="Cadastre a primeira viagem pra começar a organizar." />
+        )
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {viagens.map((v) => {
@@ -108,12 +155,12 @@ export function Viagens() {
         </div>
       )}
 
-      <NovaViagemModal aberto={modalAberto} onFechar={() => setModalAberto(false)} onCriada={carregar} />
+      <NovaViagemModal aberto={modalAberto} onFechar={() => setModalAberto(false)} onCriada={() => carregar()} />
 
       <ViagemDrawer
         viagemId={viagemSelecionadaId}
         onFechar={() => setViagemSelecionadaId(null)}
-        onAtualizado={carregar}
+        onAtualizado={() => carregar()}
       />
     </div>
   );
