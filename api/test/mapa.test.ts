@@ -126,3 +126,33 @@ describe('GET /mapa', () => {
     expect(JSON.stringify(res.body)).not.toContain('Recife');
   });
 });
+
+describe('País do cliente', () => {
+  it('padrão Brasil com UF de 2 letras; fora do Brasil, província livre — e entra no mapa com o país', async () => {
+    const token = await criarTenant();
+    const br = await request(app).post('/clientes').set(auth(token)).send({ nome: 'Br', telefone: '47999990000', cidade: 'Itajaí', uf: 'sc' });
+    expect(br.status).toBe(201);
+    expect(br.body.cliente).toMatchObject({ pais: 'BR', uf: 'SC' });
+
+    const ufRuim = await request(app).post('/clientes').set(auth(token)).send({ nome: 'X', telefone: '47999990000', cidade: 'Itajaí', uf: 'Santa Catarina' });
+    expect(ufRuim.status).toBe(400);
+
+    const uy = await request(app)
+      .post('/clientes')
+      .set(auth(token))
+      .send({ nome: 'Uy', telefone: '59899990000', cidade: 'Montevideo', uf: 'Montevideo', pais: 'uy' });
+    expect(uy.status).toBe(201);
+    expect(uy.body.cliente).toMatchObject({ pais: 'UY', uf: 'Montevideo' });
+
+    // Edição: voltar para o Brasil com província de nome longo é recusado
+    const volta = await request(app).patch(`/clientes/${uy.body.cliente.id}`).set(auth(token)).send({ pais: 'BR' });
+    expect(volta.status).toBe(400);
+
+    await request(app).get('/mapa').set(auth(token));
+    await aguardarFila();
+    const mapa = await request(app).get('/mapa').set(auth(token));
+    const montevideo = mapa.body.clientes.find((c: { cidade: string }) => c.cidade === 'Montevideo');
+    expect(montevideo).toMatchObject({ pais: 'UY', total: 1 });
+    expect(montevideo.posicao).not.toBeNull();
+  });
+});

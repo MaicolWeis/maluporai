@@ -9,7 +9,7 @@ import { agendar, chaveDoLugar, coordenadasConhecidas, type Lugar } from './geoc
 export async function dadosDoMapa() {
   const [gruposClientes, semCidade, viagens] = await Promise.all([
     prisma.cliente.groupBy({
-      by: ['cidade', 'uf'],
+      by: ['cidade', 'uf', 'pais'],
       where: { anonimizadoEm: null, cidade: { not: null } },
       _count: { _all: true },
     }),
@@ -34,7 +34,7 @@ export async function dadosDoMapa() {
   const cidades = new Map<string, { lugar: Lugar; total: number }>();
   for (const g of gruposClientes) {
     if (!g.cidade?.trim()) continue;
-    const lugar: Lugar = { cidade: g.cidade.trim(), estado: g.uf, pais: 'BR' };
+    const lugar: Lugar = { cidade: g.cidade.trim(), estado: g.uf, pais: g.pais };
     const chave = chaveDoLugar(lugar);
     const atual = cidades.get(chave);
     if (atual) atual.total += g._count._all;
@@ -54,6 +54,7 @@ export async function dadosDoMapa() {
   const clientes = [...cidades.values()].map(({ lugar, total }) => ({
     cidade: lugar.cidade,
     uf: lugar.estado ?? null,
+    pais: lugar.pais,
     total,
     posicao: coord(lugar),
   }));
@@ -78,7 +79,7 @@ export async function dadosDoMapa() {
     pendentes: faltando.length,
     // Cidades que o serviço de mapas não encontrou (conferir a grafia).
     naoLocalizadas: [
-      ...clientes.filter((c) => !c.posicao).map((c) => ({ cidade: c.cidade, uf: c.uf, pais: 'BR' })),
+      ...clientes.filter((c) => !c.posicao).map((c) => ({ cidade: c.cidade, uf: c.uf, pais: c.pais })),
       ...destinos.filter((d) => !d.posicao).map((d) => ({ cidade: d.cidade, uf: d.estado, pais: d.pais })),
     ]
       .filter((l) => porChave.has(chaveDoLugar({ cidade: l.cidade, estado: l.uf, pais: l.pais })))

@@ -8,7 +8,7 @@ import { validate } from '../middlewares/validate.js';
 import {
   anonimizarClienteSchema,
   atualizarClienteSchema,
-  criarClienteSchema,
+  criarClienteSchemaValidado,
   listarClientesQuerySchema,
 } from '../schemas/clientes.schema.js';
 
@@ -20,7 +20,7 @@ clientesRouter.use(requireAuth, tenantContext);
 clientesRouter.get('/', requirePermission('clientes'), validate(listarClientesQuerySchema, 'query'), asyncHandler(clientesController.listar));
 clientesRouter.get('/:id', requirePermission('clientes'), asyncHandler(clientesController.obter));
 clientesRouter.get('/:id/cpf', requirePermission('clientes'), asyncHandler(clientesController.revelarCpf));
-clientesRouter.post('/', requirePermission('clientes'), validate(criarClienteSchema), asyncHandler(clientesController.criar));
+clientesRouter.post('/', requirePermission('clientes'), validate(criarClienteSchemaValidado), asyncHandler(clientesController.criar));
 clientesRouter.patch('/:id', requirePermission('clientes'), validate(atualizarClienteSchema), asyncHandler(clientesController.atualizar));
 clientesRouter.delete('/:id', requirePermission('clientes'), asyncHandler(clientesController.excluir));
 

@@ -13,7 +13,7 @@ interface Posicao {
 }
 
 interface DadosMapa {
-  clientes: { cidade: string; uf: string | null; total: number; posicao: Posicao | null }[];
+  clientes: { cidade: string; uf: string | null; pais: string; total: number; posicao: Posicao | null }[];
   destinos: {
     viagemId: string;
     nome: string;
@@ -134,7 +134,7 @@ export function MapaClientesDestinos({ onAbrirViagem }: { onAbrirViagem: (viagem
       if (!c.posicao) continue;
       pontos.push([c.posicao.lat, c.posicao.lng]);
       L.marker([c.posicao.lat, c.posicao.lng], { icon: iconeClientes(c.total), zIndexOffset: 0 })
-        .bindTooltip(`${textoLugar(c.cidade, c.uf, 'BR')} — ${c.total} cliente${c.total > 1 ? 's' : ''}`, {
+        .bindTooltip(`${textoLugar(c.cidade, c.uf, c.pais)} — ${c.total} cliente${c.total > 1 ? 's' : ''}`, {
           direction: 'top',
         })
         .addTo(camadaClientes.current);

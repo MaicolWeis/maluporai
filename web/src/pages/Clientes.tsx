@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatCidade } from '../lib/paises';
 import { ClienteDrawer } from '../components/ClienteDrawer';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
@@ -78,7 +79,7 @@ export function Clientes() {
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
                   {c.telefone}
-                  {c.cidade ? ` · ${c.cidade}${c.uf ? `/${c.uf}` : ''}` : ''}
+                  {c.cidade ? ` · ${formatCidade(c)}` : ''}
                 </p>
                 {c.viagens.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -117,7 +118,7 @@ export function Clientes() {
                   </td>
                   <td className="px-4 py-3 text-zinc-600">{c.telefone}</td>
                   <td className="px-4 py-3 text-zinc-600">
-                    {c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ''}` : '—'}
+                    {formatCidade(c) || '—'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
