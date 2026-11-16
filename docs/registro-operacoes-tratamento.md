@@ -39,7 +39,7 @@ finalidade, fornecedor ou prazo mudar. Última revisão: novembro/2026 (P11).
 | Supabase | Arquivos | Brasil (sa-east-1) | Não |
 | Resend | E-mail | EUA | Sim (quando ativado) |
 | OpenStreetMap Nominatim | Coordenadas de cidades para o mapa — envia só "cidade, estado, país" (sem dado pessoal), resultado em cache permanente (`geocache`) | Europa | Não há dado pessoal |
-| CARTO (basemaps) | Imagens do mapa carregadas pelo navegador do usuário | Europa / CDN global | IP do usuário em trânsito |
+| OpenStreetMap (tile.openstreetmap.org) | Imagens do mapa carregadas pelo navegador do usuário | Europa / CDN global | IP do usuário em trânsito |
 
 Fundamento das transferências: art. 33 da LGPD — revisar os DPAs de cada fornecedor e registrar aqui a
 cláusula/mecanismo utilizado. **Pendente.**
