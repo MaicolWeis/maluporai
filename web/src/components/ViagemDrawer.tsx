@@ -18,6 +18,7 @@ import type {
   ViagemStatus,
 } from '../types/viagem';
 import { AbaDespesas } from './AbaDespesas';
+import { AbaEmbarque } from './AbaEmbarque';
 import { AbaFinanceiro } from './AbaFinanceiro';
 import { ComprovanteInline } from './FileUpload';
 import { ContatoAcoes } from './ContatoAcoes';
@@ -30,11 +31,12 @@ import { NovoClienteModal } from './NovoClienteModal';
 import { Pill } from './Pill';
 import { Select } from './Select';
 
-export type Aba = 'resumo' | 'clientes' | 'despesas' | 'financeiro';
+export type Aba = 'resumo' | 'clientes' | 'embarque' | 'despesas' | 'financeiro';
 
 const ABAS: { id: Aba; label: string }[] = [
   { id: 'resumo', label: 'Resumo' },
   { id: 'clientes', label: 'Clientes' },
+  { id: 'embarque', label: 'Embarque' },
   { id: 'despesas', label: 'Despesas' },
   { id: 'financeiro', label: 'Financeiro' },
 ];
@@ -161,7 +163,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
                 key={a.id}
                 type="button"
                 onClick={() => setAba(a.id)}
-                className={`px-3 h-9 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                className={`shrink-0 px-3 h-9 text-sm font-medium border-b-2 -mb-px transition-colors ${
                   aba === a.id ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-900'
                 }`}
               >
@@ -172,6 +174,7 @@ export function ViagemDrawer({ viagemId, onFechar, onAtualizado, abaInicial = 'r
 
           {aba === 'resumo' && <AbaResumo viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'clientes' && <AbaClientes viagem={viagem} onAtualizado={recarregar} />}
+          {aba === 'embarque' && <AbaEmbarque viagem={viagem} />}
           {aba === 'despesas' && <AbaDespesas viagem={viagem} onAtualizado={recarregar} />}
           {aba === 'financeiro' && <AbaFinanceiro viagemId={viagem.id} />}
         </div>

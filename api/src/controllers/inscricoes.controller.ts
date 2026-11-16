@@ -27,3 +27,8 @@ export async function cancelar(req: Request, res: Response) {
   const inscricao = await inscricoesService.cancelarInscricao(req.params.id, req.body, ator(req), meta(req));
   res.json({ inscricao });
 }
+
+export async function embarque(req: Request, res: Response) {
+  const inscricao = await inscricoesService.marcarEmbarque(req.params.id, req.body, ator(req), meta(req));
+  res.json({ inscricao });
+}

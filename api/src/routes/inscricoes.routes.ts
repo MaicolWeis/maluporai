@@ -5,7 +5,12 @@ import { requireAuth } from '../middlewares/requireAuth.js';
 import { requirePermission } from '../middlewares/requirePermission.js';
 import { tenantContext } from '../middlewares/tenantContext.js';
 import { validate } from '../middlewares/validate.js';
-import { atualizarInscricaoSchema, cancelarInscricaoSchema, criarInscricaoSchema } from '../schemas/inscricoes.schema.js';
+import {
+  atualizarInscricaoSchema,
+  cancelarInscricaoSchema,
+  criarInscricaoSchema,
+  embarqueSchema,
+} from '../schemas/inscricoes.schema.js';
 
 /** Aninhado em /viagens/:viagemId/inscricoes (ver app.ts). */
 export const inscricoesPorViagemRouter = Router({ mergeParams: true });
@@ -22,3 +27,4 @@ inscricoesRouter.post(
   validate(cancelarInscricaoSchema),
   asyncHandler(inscricoesController.cancelar),
 );
+inscricoesRouter.post('/:id/embarque', validate(embarqueSchema), asyncHandler(inscricoesController.embarque));

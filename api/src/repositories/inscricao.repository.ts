@@ -9,6 +9,7 @@ const LISTA_SELECT = {
   nomeAcompanhante: true,
   seguroViagem: true,
   valorTotal: true,
+  embarcadoEm: true,
   createdAt: true,
   cliente: { select: { id: true, nome: true, telefone: true } },
   pagamentos: { select: { valor: true, forma: true } },
@@ -79,4 +80,8 @@ export function updateInscricao(id: string, input: UpdateInscricaoInput) {
 
 export function cancelarInscricaoRepo(id: string) {
   return prisma.inscricao.update({ where: { id }, data: { status: 'cancelada' }, select: LISTA_SELECT });
+}
+
+export function marcarEmbarqueRepo(id: string, embarcadoEm: Date | null) {
+  return prisma.inscricao.update({ where: { id }, data: { embarcadoEm }, select: LISTA_SELECT });
 }

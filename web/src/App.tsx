@@ -10,7 +10,9 @@ import { Preferencias } from './pages/configuracoes/Preferencias';
 import { Auditoria } from './pages/configuracoes/Auditoria';
 import { Privacidade } from './pages/configuracoes/Privacidade';
 import { PoliticaPrivacidade } from './pages/PoliticaPrivacidade';
+import { EmbarqueOffline } from './pages/EmbarqueOffline';
 import { EsqueciSenha } from './pages/EsqueciSenha';
+import { listasSalvas } from './lib/embarqueOffline';
 import { Login } from './pages/Login';
 import { RedefinirSenha } from './pages/RedefinirSenha';
 import { Signup } from './pages/Signup';
@@ -25,6 +27,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   if (loading) return null;
+  // Sem internet não há como entrar (o login depende da API): se houver
+  // listas de embarque salvas no aparelho, abre direto nelas.
+  if (!user && !navigator.onLine && listasSalvas().length > 0) return <Navigate to="/embarque-offline" replace />;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return <>{children}</>;
 }
@@ -44,6 +49,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+      <Route path="/embarque-offline" element={<EmbarqueOffline />} />
       <Route path="/esqueci-senha" element={<EsqueciSenha />} />
       <Route path="/redefinir-senha/:token" element={<RedefinirSenha />} />
       <Route path="/ativar-conta/:token" element={<AtivarConta />} />

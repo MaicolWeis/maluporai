@@ -1,7 +1,8 @@
 import { Bike, Gauge, LogOut, Map, PanelLeft, Settings, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { sincronizar } from '../lib/embarqueOffline';
 import { DicaInstalar } from './DicaInstalar';
 
 const ITENS = [
@@ -41,9 +42,15 @@ export function PrivateLayout() {
   const { pathname } = useLocation();
   const [recolhido, setRecolhido] = useState(false);
 
+  // Embarques marcados sem internet são enviados assim que a conexão volta.
+  useEffect(() => {
+    const enviar = () => sincronizar().catch(() => undefined);
+    window.addEventListener('online', enviar);
+    return () => window.removeEventListener('online', enviar);
+  }, []);
+
   const sair = async () => {
-    await logout();
-    navigate('/login', { replace: true });
+    if (await logout()) navigate('/login', { replace: true });
   };
 
   const trilha = pathname.split('/').filter(Boolean).map((seg) => ROTULOS[seg] ?? seg);
