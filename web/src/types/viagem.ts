@@ -58,7 +58,10 @@ export interface InscricaoItem {
   cliente: { id: string; nome: string; telefone: string };
   levaAcompanhante: boolean;
   nomeAcompanhante: string | null;
+  docAcompanhante: string | null;
   seguroViagem: boolean;
+  seguradora: string | null;
+  numeroApolice: string | null;
   valorTotal: string;
   valorPago: string;
   statusPagamento: StatusPagamento;

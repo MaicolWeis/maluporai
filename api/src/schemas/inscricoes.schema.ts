@@ -18,14 +18,15 @@ export const criarInscricaoSchema = z
     path: ['nomeAcompanhante'],
   });
 
+// Na edição, null limpa o campo (ex.: desmarcou seguro → apaga seguradora/apólice).
 export const atualizarInscricaoSchema = z
   .object({
     levaAcompanhante: z.boolean().optional(),
-    nomeAcompanhante: z.string().trim().min(1).optional(),
-    docAcompanhante: z.string().trim().min(1).optional(),
+    nomeAcompanhante: z.string().trim().min(1).nullable().optional(),
+    docAcompanhante: z.string().trim().min(1).nullable().optional(),
     seguroViagem: z.boolean().optional(),
-    seguradora: z.string().trim().min(1).optional(),
-    numeroApolice: z.string().trim().min(1).optional(),
+    seguradora: z.string().trim().min(1).nullable().optional(),
+    numeroApolice: z.string().trim().min(1).nullable().optional(),
     valorTotal: z.coerce.number().min(0).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: 'Informe ao menos um campo' })

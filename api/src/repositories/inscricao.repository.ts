@@ -7,7 +7,10 @@ const LISTA_SELECT = {
   status: true,
   levaAcompanhante: true,
   nomeAcompanhante: true,
+  docAcompanhante: true,
   seguroViagem: true,
+  seguradora: true,
+  numeroApolice: true,
   valorTotal: true,
   embarcadoEm: true,
   createdAt: true,
@@ -66,11 +69,11 @@ export function createInscricao(viagemId: string, input: CreateInscricaoInput) {
 
 interface UpdateInscricaoInput {
   levaAcompanhante?: boolean;
-  nomeAcompanhante?: string;
-  docAcompanhante?: string;
+  nomeAcompanhante?: string | null;
+  docAcompanhante?: string | null;
   seguroViagem?: boolean;
-  seguradora?: string;
-  numeroApolice?: string;
+  seguradora?: string | null;
+  numeroApolice?: string | null;
   valorTotal?: number;
 }
 
