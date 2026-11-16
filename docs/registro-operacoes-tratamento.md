@@ -26,7 +26,8 @@ finalidade, fornecedor ou prazo mudar. Última revisão: novembro/2026 (P11).
 | Cópia local da lista de embarque: nome, telefone, nome do acompanhante, situação do pagamento (sem valores) e embarque — **sem CPF/documentos/e-mail/valores** | Viajante / acompanhante | Consulta e marcação de embarque sem internet | Execução de contrato | Apagada no logout, na troca de usuário e 2 dias após o fim da viagem | `localStorage` do aparelho do usuário que abriu a aba Embarque |
 | Nome, e-mail, senha (hash argon2id), papel, último login | Usuário da plataforma | Acesso ao sistema | Execução de contrato | Enquanto a conta existir | Postgres |
 | Aceite dos termos (versão + data) | Usuário admin | Comprovar aceite | Execução de contrato / exercício regular de direitos | Enquanto a conta existir | Postgres |
-| Logs de auditoria (ação, usuário, IP, data) | Usuários | Segurança, rastreabilidade | Legítimo interesse (art. 7º, IX) / obrigação legal | Indefinido hoje — **definir prazo** (sugestão: 5 anos) | Postgres (append-only) |
+| Log de acesso à API (usuário, empresa, rota em modelo sem IDs, status, duração, IP, data) — sem corpo, tokens ou respostas | Usuários | Segurança, investigação de incidentes e monitoramento de uso | Legítimo interesse (art. 7º, IX) | Retenção de logs do provedor (dias) | Logs do Railway (EUA) |
+| Logs de auditoria (ação, usuário, IP, data; inclui consulta de ficha de cliente e ativação de conta) | Usuários | Segurança, rastreabilidade | Legítimo interesse (art. 7º, IX) / obrigação legal | Indefinido hoje — **definir prazo** (sugestão: 5 anos) | Postgres (append-only) |
 | E-mails transacionais (destinatário, conteúdo) | Usuários | Convites, reset de senha, avisos LGPD | Execução de contrato | Conforme retenção do provedor | Resend (EUA) — ainda em modo log |
 
 ## Subprocessadores e transferência internacional

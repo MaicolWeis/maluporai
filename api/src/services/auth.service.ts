@@ -273,7 +273,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
   });
 }
 
-export async function resetPassword(input: RedefinirSenhaInput): Promise<void> {
+export async function resetPassword(input: RedefinirSenhaInput, meta: { ip?: string } = {}): Promise<void> {
   const tokenHash = hashOpaqueToken(input.token);
   const row = await findResetTokenByHash(tokenHash);
 
@@ -287,7 +287,14 @@ export async function resetPassword(input: RedefinirSenhaInput): Promise<void> {
     await updatePasswordHash(row.user_id, senhaHash);
     await markPasswordResetTokenUsed(row.id);
     await revokeAllRefreshTokensForUser(row.user_id);
-    await recordAuditLog({ acao: 'update', entidade: 'user', entidadeId: row.user_id, userId: row.user_id });
+    await recordAuditLog({
+      acao: 'update',
+      entidade: 'user',
+      entidadeId: row.user_id,
+      userId: row.user_id,
+      ip: meta.ip,
+      dadosDepois: { evento: 'redefinicao_senha' },
+    });
   });
 }
 
@@ -295,7 +302,7 @@ export async function resetPassword(input: RedefinirSenhaInput): Promise<void> {
 // Ativação de convite (P3)
 // ---------------------------------------------------------------------------
 
-export async function activateAccount(input: AtivarContaInput): Promise<void> {
+export async function activateAccount(input: AtivarContaInput, meta: { ip?: string } = {}): Promise<void> {
   const tokenHash = hashOpaqueToken(input.token);
   const row = await findActivationTokenByHash(tokenHash);
 
@@ -317,6 +324,13 @@ export async function activateAccount(input: AtivarContaInput): Promise<void> {
 
     await activateUser(row.user_id, senhaHash);
     await markActivationTokenUsed(row.id);
-    await recordAuditLog({ acao: 'update', entidade: 'user', entidadeId: row.user_id, userId: row.user_id });
+    await recordAuditLog({
+      acao: 'update',
+      entidade: 'user',
+      entidadeId: row.user_id,
+      userId: row.user_id,
+      ip: meta.ip,
+      dadosDepois: { evento: 'ativacao_conta' },
+    });
   });
 }

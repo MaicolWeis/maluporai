@@ -57,7 +57,9 @@ export function PoliticaPrivacidade() {
                 plataforma.
               </li>
               <li>
-                <strong>Registros de auditoria</strong>: quem fez qual alteração, quando e de qual IP. Base legal:
+                <strong>Registros de auditoria e de acesso</strong>: quem fez qual alteração ou abriu qual ficha de
+                cliente, quando e de qual IP, e um registro técnico de cada chamada ao sistema (usuário, tela/rota,
+                horário e IP, sem o conteúdo). Base legal:
                 legítimo interesse e cumprimento de obrigação legal (segurança e rastreabilidade).
               </li>
             </ul>

@@ -8,7 +8,7 @@ export async function listar(req: Request, res: Response) {
 }
 
 export async function obter(req: Request, res: Response) {
-  const cliente = await clientesService.obterCliente(req.params.id);
+  const cliente = await clientesService.obterCliente(req.params.id, { userId: req.auth!.userId }, { ip: req.ip });
   res.json({ cliente });
 }
 

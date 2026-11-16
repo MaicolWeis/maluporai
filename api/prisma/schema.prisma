@@ -375,6 +375,7 @@ enum AuditAcao {
   login
   export
   anonimizacao
+  consulta
 
   @@map("audit_acao")
 }

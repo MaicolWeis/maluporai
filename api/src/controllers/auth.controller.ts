@@ -62,11 +62,11 @@ export async function esqueciSenha(req: Request, res: Response) {
 }
 
 export async function redefinirSenha(req: Request, res: Response) {
-  await authService.resetPassword(req.body);
+  await authService.resetPassword(req.body, { ip: req.ip });
   res.json({ message: 'Senha redefinida com sucesso. Faça login novamente.' });
 }
 
 export async function ativarConta(req: Request, res: Response) {
-  await authService.activateAccount(req.body);
+  await authService.activateAccount(req.body, { ip: req.ip });
   res.json({ message: 'Conta ativada com sucesso. Faça login para continuar.' });
 }

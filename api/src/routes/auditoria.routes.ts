@@ -10,7 +10,7 @@ import { validate } from '../middlewares/validate.js';
 const querySchema = z.object({
   userId: z.string().uuid().optional(),
   entidade: z.string().trim().min(1).max(60).optional(),
-  acao: z.enum(['create', 'update', 'delete', 'login', 'export', 'anonimizacao']).optional(),
+  acao: z.enum(['create', 'update', 'delete', 'login', 'export', 'anonimizacao', 'consulta']).optional(),
   de: z.coerce.date().optional(),
   ate: z.coerce.date().optional(),
   page: z.coerce.number().int().min(1).default(1),
