@@ -40,4 +40,35 @@ prisma(
   `ALTER ROLE app_user WITH LOGIN NOBYPASSRLS PASSWORD '${escaped}';`,
 );
 
+// 3. Buckets privados do Supabase Storage (P8.5), idempotente. Sem as
+//    variáveis, uploads ficam desabilitados e o passo é pulado.
+const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
+if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+  const base = SUPABASE_URL.replace(/\/$/, '');
+  const buckets = [
+    { id: 'comprovantes', allowed_mime_types: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] },
+    { id: 'logos', allowed_mime_types: ['image/jpeg', 'image/png', 'image/webp'] },
+  ];
+  for (const b of buckets) {
+    const res = await fetch(`${base}/storage/v1/bucket`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        apikey: SUPABASE_SERVICE_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...b, name: b.id, public: false, file_size_limit: 5 * 1024 * 1024 }),
+    });
+    const corpo = await res.text();
+    if (res.ok) console.log(`[release] bucket ${b.id} criado`);
+    else if (/already exists|Duplicate/i.test(corpo)) console.log(`[release] bucket ${b.id} já existe`);
+    else {
+      console.error(`[release] falha ao criar bucket ${b.id}: HTTP ${res.status}`);
+      process.exit(1);
+    }
+  }
+} else {
+  console.log('[release] Supabase Storage não configurado — pulando buckets');
+}
+
 console.log('[release] ok');

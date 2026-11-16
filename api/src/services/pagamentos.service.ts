@@ -1,6 +1,7 @@
 import type { Pagamento, Prisma } from '@prisma/client';
 import { AppError, notFound } from '../lib/errors.js';
 import { somarPagamentos } from '../lib/pagamento.js';
+import { removerArquivoSeNosso } from './uploads.service.js';
 import { recordAuditLog } from '../repositories/audit-log.repository.js';
 import {
   createPagamento,
@@ -104,6 +105,7 @@ export async function excluirPagamento(id: string, input: ExcluirPagamentoInput,
   if (!pagamento) throw notFound();
 
   await deletePagamento(id);
+  await removerArquivoSeNosso(pagamento.comprovanteUrl, ator.tenantId);
 
   await recordAuditLog({
     acao: 'delete',

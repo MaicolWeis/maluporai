@@ -25,9 +25,11 @@ no Railway (rewrite em `web/vercel.json`). Assim o cookie de refresh
 | `FRONTEND_URL` | `https://<projeto>.vercel.app` |
 | `REFRESH_COOKIE_PATH` | `/api/auth` |
 | `TRUST_PROXY` | `2` (Vercel + borda do Railway) |
+| `SUPABASE_URL` | URL do projeto Supabase (só Storage) |
+| `SUPABASE_SERVICE_KEY` | service_role key do Supabase — **só no servidor**, nunca no front |
 | `EMAIL_DRIVER` | `console` no teste (links nos logs); `resend` no go-live |
 
-O release aplica as migrações com a role admin e gira a senha de `app_user`
+O release cria os buckets privados `comprovantes` e `logos` no Supabase (idempotente), aplica as migrações com a role admin e gira a senha de `app_user`
 (a migração cria a role com senha placeholder). A aplicação conecta sempre como
 `app_user`, sem `BYPASSRLS`.
 

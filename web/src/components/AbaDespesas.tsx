@@ -5,6 +5,7 @@ import { formatBRL, formatDataCivil, hojeLocalISO } from '../lib/format';
 import type { Despesa, DespesasDaViagem, ViagemDetalhe } from '../types/viagem';
 import { Button } from './Button';
 import { EmptyState } from './EmptyState';
+import { ComprovanteInline } from './FileUpload';
 import { Input } from './Input';
 import { Pill } from './Pill';
 import { Select } from './Select';
@@ -86,6 +87,13 @@ export function AbaDespesas({ viagem, onAtualizado }: { viagem: ViagemDetalhe; o
                   <p className="text-xs text-zinc-400">{formatDataCivil(d.dataDespesa)}</p>
                 </div>
                 <span className="text-sm font-semibold text-red-700 whitespace-nowrap">{formatBRL(d.valor)}</span>
+                <ComprovanteInline
+                  finalidade="comprovante_despesa"
+                  entidadeId={d.id}
+                  referencia={d.comprovanteUrl}
+                  podeEditar
+                  onAlterado={carregar}
+                />
                 <button
                   type="button"
                   title="Editar"

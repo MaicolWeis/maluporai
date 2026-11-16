@@ -10,6 +10,7 @@ import {
 } from '../repositories/despesa.repository.js';
 import { findTenantWithSettings } from '../repositories/tenant.repository.js';
 import type { AtualizarDespesaInput, CriarDespesaInput } from '../schemas/despesas.schema.js';
+import { removerArquivoSeNosso } from './uploads.service.js';
 import { garantirViagem } from './viagens.service.js';
 
 interface Ator {
@@ -129,6 +130,7 @@ export async function excluirDespesa(id: string, ator: Ator, meta: RequestMeta) 
   if (!despesa) throw notFound();
 
   await deleteDespesa(id);
+  await removerArquivoSeNosso(despesa.comprovanteUrl, ator.tenantId);
 
   await recordAuditLog({
     acao: 'delete',

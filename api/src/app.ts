@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { env } from './config/env.js';
 import { despesasPorViagemRouter, despesasRouter } from './routes/despesas.routes.js';
 import { dashboardRouter, financeiroViagemRouter } from './routes/financeiro.routes.js';
+import { uploadsRouter } from './routes/uploads.routes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -47,6 +48,7 @@ export function createApp() {
   app.use('/inscricoes', inscricoesRouter);
   app.use('/pagamentos', pagamentosRouter);
   app.use('/despesas', despesasRouter);
+  app.use('/uploads', uploadsRouter);
 
   app.use(errorHandler);
   return app;

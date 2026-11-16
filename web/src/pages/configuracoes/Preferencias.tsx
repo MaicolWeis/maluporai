@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
 import { ChipList } from '../../components/ChipList';
+import { FileUpload } from '../../components/FileUpload';
 import { Input } from '../../components/Input';
 import { api } from '../../lib/api';
 
@@ -41,7 +42,6 @@ export function Preferencias() {
     setMensagem('');
     try {
       await api.patch('/configuracoes/preferencias', {
-        logoUrl: form.logoUrl || null,
         corPrimaria: form.corPrimaria || null,
         formasPagamento: form.formasPagamento,
         categoriasDespesa: form.categoriasDespesa,
@@ -55,12 +55,42 @@ export function Preferencias() {
     }
   };
 
+  // Prévia do logo via URL assinada (bucket privado); só referências nossas.
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  useEffect(() => {
+    const ref = form?.logoUrl;
+    if (!ref || !ref.startsWith('logos/')) return setLogoPreview(null);
+    api
+      .get('/uploads/signed-url', { params: { path: ref } })
+      .then(({ data }) => setLogoPreview(data.url))
+      .catch(() => setLogoPreview(null));
+  }, [form?.logoUrl]);
+
   if (!form) return <p className="text-sm text-zinc-500">Carregando…</p>;
 
   return (
     <form onSubmit={salvar} className="max-w-lg space-y-6">
       <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
-        <Input label="URL do logo" value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />
+        <div>
+          <p className="text-xs text-zinc-500 mb-1">Logo</p>
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {logoPreview ? (
+                <img src={logoPreview} alt="Logo atual" className="h-full w-full object-contain" />
+              ) : (
+                <span className="text-[10px] text-zinc-400">sem logo</span>
+              )}
+            </div>
+            <div className="flex-1">
+              <FileUpload
+                finalidade="logo"
+                aceitaPdf={false}
+                rotulo="Arraste o logo ou clique"
+                onEnviado={(ref) => setForm({ ...form, logoUrl: ref })}
+              />
+            </div>
+          </div>
+        </div>
 
         <div>
           <p className="text-xs text-zinc-500 mb-1">Cor primária</p>
