@@ -35,7 +35,7 @@ jobs:
       DATABASE_URL: postgresql://app_user:changeme_dev_only_rotate_in_prod@localhost:5432/maluporai_test
       MIGRATION_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/maluporai_test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -75,7 +75,7 @@ jobs:
     env:
       VITE_API_URL: http://localhost:3333
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
