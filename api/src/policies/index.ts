@@ -14,7 +14,8 @@ export type Modulo =
   | 'inscricoes'
   | 'pagamentos'
   | 'despesas'
-  | 'lgpd_anonimizacao';
+  | 'lgpd_anonimizacao'
+  | 'auditoria';
 
 const PERMISSOES_POR_PAPEL: Record<UserRole, ReadonlySet<Modulo>> = {
   admin: new Set([
@@ -26,6 +27,7 @@ const PERMISSOES_POR_PAPEL: Record<UserRole, ReadonlySet<Modulo>> = {
     'pagamentos',
     'despesas',
     'lgpd_anonimizacao',
+    'auditoria',
   ]),
   operador: new Set(['clientes', 'viagens', 'inscricoes', 'pagamentos', 'despesas']),
 };

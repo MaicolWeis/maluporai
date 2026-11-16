@@ -20,6 +20,7 @@ async function criarTenant() {
       nome: `Admin ${suffix}`,
       email: `admin-fin-${suffix}@teste-financeiro.com`,
       senha: `SenhaForte-${suffix}-9x`,
+      aceiteTermos: true,
     });
   createdTenantIds.push(res.body.user.tenant.id);
   return res.body.accessToken as string;

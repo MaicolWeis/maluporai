@@ -1,3 +1,4 @@
+import { authSensivelRateLimit } from '../middlewares/rateLimits.js';
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
@@ -13,10 +14,10 @@ import {
 
 export const authRouter = Router();
 
-authRouter.post('/signup', validate(signupSchema), asyncHandler(authController.signup));
+authRouter.post('/signup', authSensivelRateLimit, validate(signupSchema), asyncHandler(authController.signup));
 authRouter.post('/login', loginRateLimit, validate(loginSchema), asyncHandler(authController.login));
 authRouter.post('/refresh', asyncHandler(authController.refresh));
 authRouter.post('/logout', asyncHandler(authController.logout));
-authRouter.post('/esqueci-senha', validate(esqueciSenhaSchema), asyncHandler(authController.esqueciSenha));
-authRouter.post('/redefinir-senha', validate(redefinirSenhaSchema), asyncHandler(authController.redefinirSenha));
-authRouter.post('/ativar-conta', validate(ativarContaSchema), asyncHandler(authController.ativarConta));
+authRouter.post('/esqueci-senha', authSensivelRateLimit, validate(esqueciSenhaSchema), asyncHandler(authController.esqueciSenha));
+authRouter.post('/redefinir-senha', authSensivelRateLimit, validate(redefinirSenhaSchema), asyncHandler(authController.redefinirSenha));
+authRouter.post('/ativar-conta', authSensivelRateLimit, validate(ativarContaSchema), asyncHandler(authController.ativarConta));

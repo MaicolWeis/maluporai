@@ -247,59 +247,95 @@ export async function garantirViagem(viagemId: string) {
   return viagem;
 }
 
-export async function criarHotel(viagemId: string, input: CriarHotelInput) {
-  await garantirViagem(viagemId);
-  return createHotel(viagemId, input);
+/** Sub-recursos (hotel/atração/incluso) também entram na trilha de auditoria (P11). */
+async function auditarSub(
+  acao: 'create' | 'update' | 'delete',
+  entidade: string,
+  id: string,
+  viagemId: string,
+  ator: Ator | undefined,
+  meta: RequestMeta | undefined,
+  dados?: Record<string, unknown>,
+) {
+  if (!ator) return;
+  await recordAuditLog({
+    acao,
+    entidade,
+    entidadeId: id,
+    userId: ator.userId,
+    ip: meta?.ip,
+    dadosDepois: { viagemId, ...dados } as Prisma.InputJsonValue,
+  });
 }
 
-export async function atualizarHotel(viagemId: string, hotelId: string, input: AtualizarHotelInput) {
+export async function criarHotel(viagemId: string, input: CriarHotelInput, ator?: Ator, meta?: RequestMeta) {
+  await garantirViagem(viagemId);
+  const criado = await createHotel(viagemId, input);
+  await auditarSub('create', 'viagem_hotel', criado.id, viagemId, ator, meta, { ...input });
+  return criado;
+}
+
+export async function atualizarHotel(viagemId: string, hotelId: string, input: AtualizarHotelInput, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
   const hotel = await findHotelByIdOrNull(hotelId);
   if (!hotel || hotel.viagemId !== viagemId) throw notFound('Hotel não encontrado');
-  return updateHotel(hotelId, input);
+  const atualizado = await updateHotel(hotelId, input);
+  await auditarSub('update', 'viagem_hotel', hotelId, viagemId, ator, meta, { ...input });
+  return atualizado;
 }
 
-export async function excluirHotel(viagemId: string, hotelId: string) {
+export async function excluirHotel(viagemId: string, hotelId: string, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
   const hotel = await findHotelByIdOrNull(hotelId);
   if (!hotel || hotel.viagemId !== viagemId) throw notFound('Hotel não encontrado');
   await deleteHotel(hotelId);
+  await auditarSub('delete', 'viagem_hotel', hotelId, viagemId, ator, meta);
 }
 
-export async function criarAtracao(viagemId: string, input: CriarAtracaoInput) {
+export async function criarAtracao(viagemId: string, input: CriarAtracaoInput, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
-  return createAtracao(viagemId, input);
+  const criado = await createAtracao(viagemId, input);
+  await auditarSub('create', 'viagem_atracao', criado.id, viagemId, ator, meta, { ...input });
+  return criado;
 }
 
-export async function atualizarAtracao(viagemId: string, atracaoId: string, input: AtualizarAtracaoInput) {
+export async function atualizarAtracao(viagemId: string, atracaoId: string, input: AtualizarAtracaoInput, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
   const atracao = await findAtracaoByIdOrNull(atracaoId);
   if (!atracao || atracao.viagemId !== viagemId) throw notFound('Atração não encontrada');
-  return updateAtracao(atracaoId, input);
+  const atualizado = await updateAtracao(atracaoId, input);
+  await auditarSub('update', 'viagem_atracao', atracaoId, viagemId, ator, meta, { ...input });
+  return atualizado;
 }
 
-export async function excluirAtracao(viagemId: string, atracaoId: string) {
+export async function excluirAtracao(viagemId: string, atracaoId: string, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
   const atracao = await findAtracaoByIdOrNull(atracaoId);
   if (!atracao || atracao.viagemId !== viagemId) throw notFound('Atração não encontrada');
   await deleteAtracao(atracaoId);
+  await auditarSub('delete', 'viagem_atracao', atracaoId, viagemId, ator, meta);
 }
 
-export async function criarIncluso(viagemId: string, input: CriarInclusoInput) {
+export async function criarIncluso(viagemId: string, input: CriarInclusoInput, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
-  return createIncluso(viagemId, input);
+  const criado = await createIncluso(viagemId, input);
+  await auditarSub('create', 'viagem_incluso', criado.id, viagemId, ator, meta, { ...input });
+  return criado;
 }
 
-export async function atualizarIncluso(viagemId: string, inclusoId: string, input: AtualizarInclusoInput) {
+export async function atualizarIncluso(viagemId: string, inclusoId: string, input: AtualizarInclusoInput, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
   const incluso = await findInclusoByIdOrNull(inclusoId);
   if (!incluso || incluso.viagemId !== viagemId) throw notFound('Item incluso não encontrado');
-  return updateIncluso(inclusoId, input);
+  const atualizado = await updateIncluso(inclusoId, input);
+  await auditarSub('update', 'viagem_incluso', inclusoId, viagemId, ator, meta, { ...input });
+  return atualizado;
 }
 
-export async function excluirIncluso(viagemId: string, inclusoId: string) {
+export async function excluirIncluso(viagemId: string, inclusoId: string, ator?: Ator, meta?: RequestMeta) {
   await garantirViagem(viagemId);
   const incluso = await findInclusoByIdOrNull(inclusoId);
   if (!incluso || incluso.viagemId !== viagemId) throw notFound('Item incluso não encontrado');
   await deleteIncluso(inclusoId);
+  await auditarSub('delete', 'viagem_incluso', inclusoId, viagemId, ator, meta);
 }

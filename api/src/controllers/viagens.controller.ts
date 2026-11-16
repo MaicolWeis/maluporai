@@ -44,17 +44,17 @@ export async function excluir(req: Request, res: Response) {
 // ---------------------------------------------------------------------------
 
 export async function criarHotel(req: Request, res: Response) {
-  const hotel = await viagensService.criarHotel(req.params.viagemId, req.body);
+  const hotel = await viagensService.criarHotel(req.params.viagemId, req.body, ator(req), meta(req));
   res.status(201).json({ hotel });
 }
 
 export async function atualizarHotel(req: Request, res: Response) {
-  const hotel = await viagensService.atualizarHotel(req.params.viagemId, req.params.id, req.body);
+  const hotel = await viagensService.atualizarHotel(req.params.viagemId, req.params.id, req.body, ator(req), meta(req));
   res.json({ hotel });
 }
 
 export async function excluirHotel(req: Request, res: Response) {
-  await viagensService.excluirHotel(req.params.viagemId, req.params.id);
+  await viagensService.excluirHotel(req.params.viagemId, req.params.id, ator(req), meta(req));
   res.status(204).send();
 }
 
@@ -63,17 +63,17 @@ export async function excluirHotel(req: Request, res: Response) {
 // ---------------------------------------------------------------------------
 
 export async function criarAtracao(req: Request, res: Response) {
-  const atracao = await viagensService.criarAtracao(req.params.viagemId, req.body);
+  const atracao = await viagensService.criarAtracao(req.params.viagemId, req.body, ator(req), meta(req));
   res.status(201).json({ atracao });
 }
 
 export async function atualizarAtracao(req: Request, res: Response) {
-  const atracao = await viagensService.atualizarAtracao(req.params.viagemId, req.params.id, req.body);
+  const atracao = await viagensService.atualizarAtracao(req.params.viagemId, req.params.id, req.body, ator(req), meta(req));
   res.json({ atracao });
 }
 
 export async function excluirAtracao(req: Request, res: Response) {
-  await viagensService.excluirAtracao(req.params.viagemId, req.params.id);
+  await viagensService.excluirAtracao(req.params.viagemId, req.params.id, ator(req), meta(req));
   res.status(204).send();
 }
 
@@ -82,16 +82,16 @@ export async function excluirAtracao(req: Request, res: Response) {
 // ---------------------------------------------------------------------------
 
 export async function criarIncluso(req: Request, res: Response) {
-  const incluso = await viagensService.criarIncluso(req.params.viagemId, req.body);
+  const incluso = await viagensService.criarIncluso(req.params.viagemId, req.body, ator(req), meta(req));
   res.status(201).json({ incluso });
 }
 
 export async function atualizarIncluso(req: Request, res: Response) {
-  const incluso = await viagensService.atualizarIncluso(req.params.viagemId, req.params.id, req.body);
+  const incluso = await viagensService.atualizarIncluso(req.params.viagemId, req.params.id, req.body, ator(req), meta(req));
   res.json({ incluso });
 }
 
 export async function excluirIncluso(req: Request, res: Response) {
-  await viagensService.excluirIncluso(req.params.viagemId, req.params.id);
+  await viagensService.excluirIncluso(req.params.viagemId, req.params.id, ator(req), meta(req));
   res.status(204).send();
 }

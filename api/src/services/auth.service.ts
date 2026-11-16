@@ -1,3 +1,4 @@
+import { TERMOS_VERSAO } from '../lib/termos.js';
 import { randomUUID } from 'node:crypto';
 import type { UserRole } from '@prisma/client';
 import { AppError, unauthorized } from '../lib/errors.js';
@@ -121,7 +122,7 @@ export async function signup(input: SignupInput, meta: RequestMeta): Promise<Ses
 
     try {
       await createDefaultTenantSettings();
-      const createdUser = await createAdminUser({ nome: input.nome, email: input.email, senhaHash });
+      const createdUser = await createAdminUser({ nome: input.nome, email: input.email, senhaHash, termosVersao: TERMOS_VERSAO });
       await createRefreshToken({
         userId: createdUser.id,
         familyId,

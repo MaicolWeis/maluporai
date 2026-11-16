@@ -12,6 +12,10 @@ export const signupSchema = z.object({
   nome: z.string().trim().min(2, 'Nome é obrigatório'),
   email: z.string().trim().toLowerCase().email('E-mail inválido'),
   senha: senhaSchema,
+  // Aceite explícito dos Termos de Uso e da Política de Privacidade (P11).
+  aceiteTermos: z.literal(true, {
+    errorMap: () => ({ message: 'É preciso aceitar os Termos de Uso e a Política de Privacidade' }),
+  }),
 });
 
 export const loginSchema = z.object({

@@ -46,6 +46,9 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Auditoria de dependências (produção, severidade crítica)
+        run: npm audit --omit=dev --audit-level=critical
+
       - name: Gerar segredos de teste (JWT/criptografia)
         run: |
           {
@@ -82,6 +85,9 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Auditoria de dependências (produção, severidade crítica)
+        run: npm audit --omit=dev --audit-level=critical
 
       - name: Build
         run: npm run build
