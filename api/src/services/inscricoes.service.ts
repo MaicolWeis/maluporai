@@ -51,7 +51,10 @@ function toInscricaoDTO(inscricao: {
   status: InscricaoStatus;
   levaAcompanhante: boolean;
   nomeAcompanhante: string | null;
+  docAcompanhante: string | null;
   seguroViagem: boolean;
+  seguradora: string | null;
+  numeroApolice: string | null;
   valorTotal: Prisma.Decimal;
   embarcadoEm: Date | null;
   createdAt: Date;
@@ -65,7 +68,10 @@ function toInscricaoDTO(inscricao: {
     cliente: inscricao.cliente,
     levaAcompanhante: inscricao.levaAcompanhante,
     nomeAcompanhante: inscricao.nomeAcompanhante,
+    docAcompanhante: inscricao.docAcompanhante,
     seguroViagem: inscricao.seguroViagem,
+    seguradora: inscricao.seguradora,
+    numeroApolice: inscricao.numeroApolice,
     valorTotal: inscricao.valorTotal,
     valorPago,
     statusPagamento: derivarStatusPagamento(inscricao.valorTotal, valorPago),

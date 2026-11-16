@@ -880,7 +880,7 @@ function FormInscricao({
         Seguro viagem
       </label>
       {seguroViagem && (
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1">
             <Input label="Seguradora" value={seguradora} onChange={(e) => setSeguradora(e.target.value)} />
           </div>
@@ -950,9 +950,27 @@ function InscricaoCard({
   const [form, setForm] = useState({
     levaAcompanhante: inscricao.levaAcompanhante,
     nomeAcompanhante: inscricao.nomeAcompanhante ?? '',
+    docAcompanhante: inscricao.docAcompanhante ?? '',
     seguroViagem: inscricao.seguroViagem,
+    seguradora: inscricao.seguradora ?? '',
+    numeroApolice: inscricao.numeroApolice ?? '',
     valorTotal: inscricao.valorTotal,
   });
+
+  // Reabre a edição sempre com os dados atuais da inscrição.
+  const abrirEdicao = () => {
+    setForm({
+      levaAcompanhante: inscricao.levaAcompanhante,
+      nomeAcompanhante: inscricao.nomeAcompanhante ?? '',
+      docAcompanhante: inscricao.docAcompanhante ?? '',
+      seguroViagem: inscricao.seguroViagem,
+      seguradora: inscricao.seguradora ?? '',
+      numeroApolice: inscricao.numeroApolice ?? '',
+      valorTotal: inscricao.valorTotal,
+    });
+    setErro('');
+    setEditando(true);
+  };
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -963,8 +981,11 @@ function InscricaoCard({
     try {
       await api.patch(`/inscricoes/${inscricao.id}`, {
         levaAcompanhante: form.levaAcompanhante,
-        nomeAcompanhante: form.levaAcompanhante ? form.nomeAcompanhante.trim() || undefined : undefined,
+        nomeAcompanhante: form.levaAcompanhante ? form.nomeAcompanhante.trim() || undefined : null,
+        docAcompanhante: form.levaAcompanhante ? form.docAcompanhante.trim() || null : null,
         seguroViagem: form.seguroViagem,
+        seguradora: form.seguroViagem ? form.seguradora.trim() || null : null,
+        numeroApolice: form.seguroViagem ? form.numeroApolice.trim() || null : null,
         valorTotal: Number(form.valorTotal),
       });
       setEditando(false);
@@ -1031,7 +1052,9 @@ function InscricaoCard({
 
       <div className="flex flex-wrap gap-1 my-2">
         {inscricao.levaAcompanhante && <Pill>Acompanhante: {inscricao.nomeAcompanhante}</Pill>}
-        {inscricao.seguroViagem && <Pill>Seguro</Pill>}
+        {inscricao.seguroViagem && (
+          <Pill>{inscricao.seguradora ? `Seguro: ${inscricao.seguradora}` : 'Seguro'}</Pill>
+        )}
         {inscricao.formaPagamentoPredominante && (
           <Pill cls="bg-brand text-white">{inscricao.formaPagamentoPredominante}</Pill>
         )}
@@ -1116,7 +1139,7 @@ function InscricaoCard({
 
       {podeEditar && !editando && (
         <div className="flex gap-3 mt-2">
-          <button type="button" onClick={() => setEditando(true)} className="text-xs font-semibold text-brand hover:text-brand-hover">
+          <button type="button" onClick={abrirEdicao} className="text-xs font-semibold text-brand hover:text-brand-hover">
             Editar
           </button>
           <button type="button" onClick={cancelar} className="text-xs font-semibold text-red-600 hover:text-red-700">
@@ -1136,12 +1159,19 @@ function InscricaoCard({
             Leva acompanhante
           </label>
           {form.levaAcompanhante && (
-            <Input
-              label="Nome do acompanhante"
-              required
-              value={form.nomeAcompanhante}
-              onChange={(e) => setForm({ ...form, nomeAcompanhante: e.target.value })}
-            />
+            <>
+              <Input
+                label="Nome do acompanhante"
+                required
+                value={form.nomeAcompanhante}
+                onChange={(e) => setForm({ ...form, nomeAcompanhante: e.target.value })}
+              />
+              <Input
+                label="Documento do acompanhante (opcional)"
+                value={form.docAcompanhante}
+                onChange={(e) => setForm({ ...form, docAcompanhante: e.target.value })}
+              />
+            </>
           )}
           <label className="flex items-center gap-2 text-xs text-zinc-600">
             <input
@@ -1151,6 +1181,24 @@ function InscricaoCard({
             />
             Seguro viagem
           </label>
+          {form.seguroViagem && (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1">
+                <Input
+                  label="Seguradora"
+                  value={form.seguradora}
+                  onChange={(e) => setForm({ ...form, seguradora: e.target.value })}
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  label="Nº da apólice"
+                  value={form.numeroApolice}
+                  onChange={(e) => setForm({ ...form, numeroApolice: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
           <MoneyInput
             label="Valor total (R$)"
             value={form.valorTotal}
