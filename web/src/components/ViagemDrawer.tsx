@@ -291,6 +291,8 @@ function DadosBasicos({ viagem, onSalvo }: { viagem: ViagemDetalhe; onSalvo: () 
             type="date"
             required
             value={form.dataFim}
+            min={form.dataInicio || undefined}
+            error={form.dataInicio && form.dataFim && form.dataFim < form.dataInicio ? 'Deve ser igual ou posterior à data de início' : undefined}
             onChange={(e) => setForm({ ...form, dataFim: e.target.value })}
           />
         </div>
@@ -437,6 +439,8 @@ function Hospedagem({
               <Input
                 label="Check-out"
                 type="date"
+                min={form.checkIn || undefined}
+                error={form.checkIn && form.checkOut && form.checkOut < form.checkIn ? 'Deve ser igual ou posterior ao check-in' : undefined}
                 value={form.checkOut}
                 onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
               />

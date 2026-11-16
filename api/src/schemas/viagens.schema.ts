@@ -18,7 +18,7 @@ export const listarViagensQuerySchema = z.object({
   porPagina: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export const criarViagemSchema = z.object({
+const viagemBaseSchema = z.object({
   nome: z.string().trim().min(2, 'Nome é obrigatório'),
   destinoCidade: z.string().trim().min(1, 'Destino é obrigatório'),
   destinoUf: z.string().trim().length(2, 'UF inválida').toUpperCase(),
@@ -30,9 +30,22 @@ export const criarViagemSchema = z.object({
   descricao: z.string().optional(),
 });
 
-export const atualizarViagemSchema = criarViagemSchema
+const MSG_DATAS = 'A data final não pode ser anterior à data de início';
+
+/** Só compara quando as duas datas vêm no payload; a edição parcial é checada no service. */
+function datasEmOrdem(inicio?: Date, fim?: Date) {
+  return !inicio || !fim || fim >= inicio;
+}
+
+export const criarViagemSchema = viagemBaseSchema.refine((v) => datasEmOrdem(v.dataInicio, v.dataFim), {
+  message: MSG_DATAS,
+  path: ['dataFim'],
+});
+
+export const atualizarViagemSchema = viagemBaseSchema
   .partial()
-  .refine((v) => Object.keys(v).length > 0, { message: 'Informe ao menos um campo' });
+  .refine((v) => Object.keys(v).length > 0, { message: 'Informe ao menos um campo' })
+  .refine((v) => datasEmOrdem(v.dataInicio, v.dataFim), { message: MSG_DATAS, path: ['dataFim'] });
 
 export const atualizarStatusViagemSchema = z.object({
   status: statusEnum,
@@ -48,10 +61,17 @@ const hotelBaseSchema = z.object({
   valorNegociado: z.coerce.number().min(0).optional(),
   observacoes: z.string().optional(),
 });
-export const criarHotelSchema = hotelBaseSchema;
+export const criarHotelSchema = hotelBaseSchema.refine((v) => datasEmOrdem(v.checkIn, v.checkOut), {
+  message: 'O check-out não pode ser anterior ao check-in',
+  path: ['checkOut'],
+});
 export const atualizarHotelSchema = hotelBaseSchema
   .partial()
-  .refine((v) => Object.keys(v).length > 0, { message: 'Informe ao menos um campo' });
+  .refine((v) => Object.keys(v).length > 0, { message: 'Informe ao menos um campo' })
+  .refine((v) => datasEmOrdem(v.checkIn, v.checkOut), {
+    message: 'O check-out não pode ser anterior ao check-in',
+    path: ['checkOut'],
+  });
 
 const atracaoTipoEnum = z.enum(['parque', 'passeio', 'refeicao', 'outro']);
 const atracaoBaseSchema = z.object({

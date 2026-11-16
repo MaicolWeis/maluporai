@@ -46,6 +46,7 @@ const nomes = (res: request.Response) => res.body.viagens.map((v: { nome: string
 afterAll(async () => {
   const admin = new PrismaClient({ datasourceUrl: process.env.MIGRATION_DATABASE_URL });
   for (const tenantId of createdTenantIds) {
+    await admin.viagemHotel.deleteMany({ where: { tenantId } });
     await admin.viagem.deleteMany({ where: { tenantId } });
     await admin.refreshToken.deleteMany({ where: { tenantId } });
     await admin.auditLog.deleteMany({ where: { tenantId } });
@@ -98,5 +99,34 @@ describe('Filtro por período da viagem', () => {
 
     const aPartirDeMaio = await request(app).get('/viagens').query({ dataInicio: '2027-05-01' }).set(auth(token));
     expect(nomes(aPartirDeMaio)).toEqual(['Maio']);
+  });
+});
+
+describe('Datas da viagem e do hotel', () => {
+  it('recusa data final anterior à inicial na criação, na edição parcial e no check-out do hotel', async () => {
+    const token = await criarTenant();
+
+    const invalida = await request(app)
+      .post('/viagens')
+      .set(auth(token))
+      .send({ nome: 'Invertida', destinoCidade: 'SP', destinoUf: 'SP', dataInicio: '2027-11-22', dataFim: '2027-11-15', capacidade: 6, precoTitular: 1 });
+    expect(invalida.status).toBe(400);
+
+    const mesmoDia = await criarViagem(token, 'Bate-volta', '2027-11-22', '2027-11-22');
+    expect(mesmoDia).toBeTruthy();
+
+    const id = await criarViagem(token, 'Ok', '2027-11-15', '2027-11-22');
+    const soFim = await request(app).patch(`/viagens/${id}`).set(auth(token)).send({ dataFim: '2027-11-10' });
+    expect(soFim.status).toBe(400);
+    expect(soFim.body.error.code).toBe('DATAS_INVALIDAS');
+
+    const soInicio = await request(app).patch(`/viagens/${id}`).set(auth(token)).send({ dataInicio: '2027-11-30' });
+    expect(soInicio.status).toBe(400);
+
+    const hotel = await request(app)
+      .post(`/viagens/${id}/hoteis`)
+      .set(auth(token))
+      .send({ nome: 'Hotel', checkIn: '2027-11-16', checkOut: '2027-11-15' });
+    expect(hotel.status).toBe(400);
   });
 });
