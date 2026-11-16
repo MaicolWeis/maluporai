@@ -103,9 +103,10 @@ export function MapaClientesDestinos({ onAbrirViagem }: { onAbrirViagem: (viagem
   useEffect(() => {
     if (!elemento.current || mapa.current) return;
     const m = L.map(elemento.current, { scrollWheelZoom: false, worldCopyJump: true }).setView([-15, -60], 3);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: 'abcd',
+    // Mapas do OpenStreetMap (sem chave). Tons suavizados via CSS (.mapa-suave)
+    // para os marcadores se destacarem.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
       maxZoom: 18,
     }).addTo(m);
     // Rolagem do mouse só depois de clicar no mapa (não sequestra a rolagem da página).
@@ -208,7 +209,7 @@ export function MapaClientesDestinos({ onAbrirViagem }: { onAbrirViagem: (viagem
           </label>
         </div>
       </div>
-      <div className="isolate relative rounded-xl border border-slate-200 shadow-card overflow-hidden bg-slate-100">
+      <div className="mapa-suave isolate relative rounded-xl border border-slate-200 shadow-card overflow-hidden bg-slate-100">
         <div ref={elemento} className="h-[320px] md:h-[420px]" aria-label="Mapa de clientes e destinos" />
         {!dados && !erro && (
           <p className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">Carregando mapa…</p>
