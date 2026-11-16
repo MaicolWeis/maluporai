@@ -1,11 +1,19 @@
 import { z } from 'zod';
 
-const statusEnum = z.enum(['planejamento', 'inscricoes', 'confirmada', 'concluida', 'cancelada']);
+const statusEnum = z.enum(['planejamento', 'inscricoes', 'confirmada', 'concluida', 'cancelada', 'arquivada']);
 
 export const listarViagensQuerySchema = z.object({
   status: statusEnum.optional(),
+  // Período da viagem: traz as viagens que acontecem (ao menos em parte)
+  // entre dataInicio e dataFim.
   dataInicio: z.coerce.date().optional(),
   dataFim: z.coerce.date().optional(),
+  // Arquivadas ficam fora da listagem padrão; entram com incluirArquivadas=true
+  // ou filtrando status=arquivada.
+  incluirArquivadas: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   pagina: z.coerce.number().int().min(1).default(1),
   porPagina: z.coerce.number().int().min(1).max(100).default(20),
 });

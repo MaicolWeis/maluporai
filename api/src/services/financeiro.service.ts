@@ -93,7 +93,8 @@ export async function dashboard(agora = new Date()) {
   const limitePendencia = adicionarDias(hoje, 30);
 
   const viagens = await prisma.viagem.findMany({
-    where: { status: { not: 'cancelada' } },
+    // Canceladas e arquivadas não aparecem na visão geral.
+    where: { status: { notIn: ['cancelada', 'arquivada'] } },
     orderBy: { dataInicio: 'asc' },
     include: {
       inscricoes: {

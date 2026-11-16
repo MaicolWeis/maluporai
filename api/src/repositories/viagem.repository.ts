@@ -18,15 +18,18 @@ interface ListarViagensParams {
   status?: ViagemStatus;
   dataInicio?: Date;
   dataFim?: Date;
+  incluirArquivadas?: boolean;
   skip: number;
   take: number;
 }
 
-function buildWhere({ status, dataInicio, dataFim }: Omit<ListarViagensParams, 'skip' | 'take'>) {
+function buildWhere({ status, dataInicio, dataFim, incluirArquivadas }: Omit<ListarViagensParams, 'skip' | 'take'>) {
   const where: Prisma.ViagemWhereInput = {};
   if (status) where.status = status;
-  if (dataInicio) where.dataInicio = { gte: dataInicio };
-  if (dataFim) where.dataFim = { lte: dataFim };
+  else if (!incluirArquivadas) where.status = { not: 'arquivada' };
+  // Sobreposição de períodos: a viagem acontece (ao menos em parte) no intervalo.
+  if (dataInicio) where.dataFim = { gte: dataInicio };
+  if (dataFim) where.dataInicio = { lte: dataFim };
   return where;
 }
 
@@ -41,7 +44,7 @@ export function listViagens(params: ListarViagensParams) {
   });
 }
 
-export function countViagens(params: Pick<ListarViagensParams, 'status' | 'dataInicio' | 'dataFim'>) {
+export function countViagens(params: Pick<ListarViagensParams, 'status' | 'dataInicio' | 'dataFim' | 'incluirArquivadas'>) {
   return prisma.viagem.count({ where: buildWhere(params) });
 }
 

@@ -1,4 +1,4 @@
-export type ViagemStatus = 'planejamento' | 'inscricoes' | 'confirmada' | 'concluida' | 'cancelada';
+export type ViagemStatus = 'planejamento' | 'inscricoes' | 'confirmada' | 'concluida' | 'cancelada' | 'arquivada';
 
 export interface Agregados {
   pessoasConfirmadas: number;

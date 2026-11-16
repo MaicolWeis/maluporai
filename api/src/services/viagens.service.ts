@@ -127,7 +127,12 @@ function toDetailDTO(
 
 export async function listarViagens(query: ListarViagensQuery) {
   const skip = (query.pagina - 1) * query.porPagina;
-  const filtro = { status: query.status, dataInicio: query.dataInicio, dataFim: query.dataFim };
+  const filtro = {
+    status: query.status,
+    dataInicio: query.dataInicio,
+    dataFim: query.dataFim,
+    incluirArquivadas: query.incluirArquivadas,
+  };
 
   const [viagens, total] = await Promise.all([
     listViagens({ ...filtro, skip, take: query.porPagina }),
@@ -180,8 +185,10 @@ const TRANSICOES_VALIDAS: Record<ViagemStatus, ViagemStatus[]> = {
   planejamento: ['inscricoes', 'cancelada'],
   inscricoes: ['confirmada', 'cancelada'],
   confirmada: ['concluida', 'cancelada'],
-  concluida: [],
+  // Arquivar: viagem que já aconteceu sai da visão geral e da lista padrão.
+  concluida: ['arquivada'],
   cancelada: [],
+  arquivada: ['concluida'],
 };
 
 export async function atualizarStatusViagem(
