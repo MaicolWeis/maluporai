@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { Button } from './Button';
 import { Input } from './Input';
+import { MoneyInput } from './MoneyInput';
 import { Modal } from './Modal';
 
 interface Props {
@@ -111,22 +112,16 @@ export function NovaViagemModal({ aberto, onFechar, onCriada }: Props) {
         />
         <div className="flex gap-2">
           <div className="flex-1">
-            <Input
+            <MoneyInput
               label="Preço titular (R$)"
-              type="number"
-              min={0}
-              step="0.01"
               required
               value={form.precoTitular}
               onChange={(e) => setForm({ ...form, precoTitular: e.target.value })}
             />
           </div>
           <div className="flex-1">
-            <Input
+            <MoneyInput
               label="Preço acompanhante (R$)"
-              type="number"
-              min={0}
-              step="0.01"
               value={form.precoAcompanhante}
               onChange={(e) => setForm({ ...form, precoAcompanhante: e.target.value })}
             />
