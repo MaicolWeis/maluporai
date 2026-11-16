@@ -11,6 +11,7 @@ import { auditoriaRouter } from './routes/auditoria.routes.js';
 import { origemVercel } from './middlewares/origemVercel.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
+import { logAcesso } from './middlewares/logAcesso.js';
 import { authRouter } from './routes/auth.routes.js';
 import { clientesRouter } from './routes/clientes.routes.js';
 import { configuracoesRouter } from './routes/configuracoes.routes.js';
@@ -42,6 +43,7 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
   app.use(requestId);
+  app.use(logAcesso);
   app.use(geralRateLimit);
 
   app.use(healthRouter);

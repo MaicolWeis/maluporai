@@ -116,9 +116,11 @@ function toInscricaoResumoDTO(inscricao: {
   };
 }
 
-export async function obterCliente(id: string) {
+/** Abrir a ficha expõe dados pessoais (telefone, nascimento, contato de emergência): fica auditado. */
+export async function obterCliente(id: string, ator: Ator, meta: RequestMeta) {
   const cliente = await findClienteComHistorico(id);
   if (!cliente) throw notFound();
+  await recordAuditLog({ acao: 'consulta', entidade: 'cliente', entidadeId: id, userId: ator.userId, ip: meta.ip });
   return {
     ...toDetailDTO(cliente),
     inscricoes: cliente.inscricoes.map(toInscricaoResumoDTO),

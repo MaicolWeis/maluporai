@@ -32,6 +32,7 @@ const ACOES: Record<string, { label: string; cls: string }> = {
   login: { label: 'login', cls: 'bg-stone-100 text-zinc-700 border border-stone-200' },
   export: { label: 'exportação', cls: 'bg-sky-100 text-sky-700 border border-sky-200' },
   anonimizacao: { label: 'anonimização', cls: 'bg-brand text-white' },
+  consulta: { label: 'consulta', cls: 'bg-slate-50 text-slate-600 border border-slate-200' },
 };
 
 const dataHora = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
