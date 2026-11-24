@@ -6,6 +6,7 @@ export const listarClientesQuerySchema = z.object({
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
     .optional(),
+  status: z.enum(['ativo', 'inativo', 'bloqueado']).optional(),
   pagina: z.coerce.number().int().min(1).default(1),
   porPagina: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -37,6 +38,9 @@ export const criarClienteSchema = z.object({
     .optional(),
   // Moto do cliente (opcional). null limpa na edição.
   motoMarca: z.string().trim().min(1).max(60).nullable().optional(),
+  status: z.enum(['ativo', 'inativo', 'bloqueado']).optional(),
+  // Só faz sentido com status=bloqueado; ao sair do bloqueio é apagado.
+  motivoBloqueio: z.string().trim().min(1).max(300).nullable().optional(),
   motoModelo: z.string().trim().min(1).max(80).nullable().optional(),
   contatoEmergenciaNome: z.string().trim().min(1).optional(),
   contatoEmergenciaTelefone: z.string().trim().min(8).optional(),

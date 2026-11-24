@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { CLIENTE_STATUS_LABEL, CLIENTE_STATUS_PILL, type ClienteStatus } from '../lib/clienteStatus';
 import { formatCidade } from '../lib/paises';
 import { ClienteDrawer } from '../components/ClienteDrawer';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
 import { Input } from '../components/Input';
+import { Select } from '../components/Select';
 import { NovoClienteModal } from '../components/NovoClienteModal';
 import { Pill } from '../components/Pill';
 import { api } from '../lib/api';
@@ -13,13 +15,16 @@ export function Clientes() {
   const [clientes, setClientes] = useState<ClienteListItem[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState('');
+  const [statusFiltro, setStatusFiltro] = useState<'' | ClienteStatus>('');
   const [modalAberto, setModalAberto] = useState(false);
   const [clienteSelecionadoId, setClienteSelecionadoId] = useState<string | null>(null);
 
   const carregar = async (termoBusca: string) => {
     setCarregando(true);
     try {
-      const { data } = await api.get('/clientes', { params: termoBusca ? { busca: termoBusca } : {} });
+      const { data } = await api.get('/clientes', {
+        params: { busca: termoBusca || undefined, status: statusFiltro || undefined, porPagina: 100 },
+      });
       setClientes(data.clientes);
     } finally {
       setCarregando(false);
@@ -30,7 +35,7 @@ export function Clientes() {
     const timer = setTimeout(() => carregar(busca), 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [busca]);
+  }, [busca, statusFiltro]);
 
   return (
     <div>
@@ -42,22 +47,40 @@ export function Clientes() {
         <Button onClick={() => setModalAberto(true)}>Novo cliente</Button>
       </div>
 
-      <div className="mb-4 max-w-sm">
-        <Input
-          label="Buscar"
-          placeholder="Nome, telefone ou cidade"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-        />
+      <div className="mb-4 flex flex-col sm:flex-row gap-2 sm:items-end">
+        <div className="w-full sm:max-w-sm">
+          <Input
+            label="Buscar"
+            placeholder="Nome, telefone ou cidade"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+        </div>
+        <div className="w-full sm:w-44">
+          <Select
+            label="Status"
+            value={statusFiltro}
+            onChange={(e) => setStatusFiltro(e.target.value as '' | ClienteStatus)}
+          >
+            <option value="">Todos</option>
+            <option value="ativo">Ativos</option>
+            <option value="inativo">Inativos</option>
+            <option value="bloqueado">Bloqueados</option>
+          </Select>
+        </div>
       </div>
 
       {carregando ? (
         <p className="text-sm text-zinc-500">Carregando…</p>
       ) : clientes.length === 0 ? (
-        <EmptyState
-          titulo="Nenhum cliente ainda"
-          descricao="Cadastre o primeiro cliente pra começar a organizar as viagens."
-        />
+        busca || statusFiltro ? (
+          <p className="text-sm text-slate-500">Nenhum cliente encontrado com esse filtro.</p>
+        ) : (
+          <EmptyState
+            titulo="Nenhum cliente ainda"
+            descricao="Cadastre o primeiro cliente pra começar a organizar as viagens."
+          />
+        )
       ) : (
         <>
         <ul className="md:hidden space-y-2">
@@ -73,9 +96,14 @@ export function Clientes() {
                     {c.nome}
                     {c.anonimizadoEm && <span className="ml-1 text-xs font-normal text-slate-400">(anonimizado)</span>}
                   </p>
-                  {c.consentimentoMarketing && (
-                    <Pill cls="bg-emerald-50 text-emerald-700 border border-emerald-200">Marketing</Pill>
-                  )}
+                  <div className="flex gap-1">
+                    {c.status !== 'ativo' && (
+                      <Pill cls={CLIENTE_STATUS_PILL[c.status]}>{CLIENTE_STATUS_LABEL[c.status]}</Pill>
+                    )}
+                    {c.consentimentoMarketing && (
+                      <Pill cls="bg-emerald-50 text-emerald-700 border border-emerald-200">Marketing</Pill>
+                    )}
+                  </div>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
                   {c.telefone}
@@ -100,6 +128,7 @@ export function Clientes() {
                 <th className="px-4 py-3 font-semibold">Telefone</th>
                 <th className="px-4 py-3 font-semibold">Cidade</th>
                 <th className="px-4 py-3 font-semibold">Viagens</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Consentimento</th>
               </tr>
             </thead>
@@ -128,6 +157,11 @@ export function Clientes() {
                         c.viagens.map((v) => <Pill key={v.id}>{v.nome}</Pill>)
                       )}
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span title={c.status === 'bloqueado' && c.motivoBloqueio ? c.motivoBloqueio : undefined}>
+                      <Pill cls={CLIENTE_STATUS_PILL[c.status]}>{CLIENTE_STATUS_LABEL[c.status]}</Pill>
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <Pill

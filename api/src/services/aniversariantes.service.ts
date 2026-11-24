@@ -12,7 +12,7 @@ export async function aniversariantesDoMes(mes?: number) {
   const mesAlvo = mes ?? hoje.getUTCMonth() + 1;
 
   const clientes = await prisma.cliente.findMany({
-    where: { anonimizadoEm: null, dataNascimento: { not: null } },
+    where: { anonimizadoEm: null, status: { not: 'bloqueado' }, dataNascimento: { not: null } },
     select: { id: true, nome: true, telefone: true, dataNascimento: true },
   });
 

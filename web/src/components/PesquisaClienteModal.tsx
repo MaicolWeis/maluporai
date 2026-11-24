@@ -68,7 +68,8 @@ export function PesquisaClienteModal({ aberto, onFechar, onSelecionar, idsIndisp
     };
   }, [aberto, busca, pagina]);
 
-  const disponivel = (c: ClienteListItem) => !c.anonimizadoEm && !idsIndisponiveis?.has(c.id);
+  const disponivel = (c: ClienteListItem) =>
+    !c.anonimizadoEm && c.status !== 'bloqueado' && !idsIndisponiveis?.has(c.id);
 
   const confirmar = (c: ClienteListItem | null) => {
     if (!c || !disponivel(c)) return;
@@ -77,7 +78,13 @@ export function PesquisaClienteModal({ aberto, onFechar, onSelecionar, idsIndisp
   };
 
   const motivoIndisponivel = (c: ClienteListItem) =>
-    c.anonimizadoEm ? 'Anonimizado' : idsIndisponiveis?.has(c.id) ? 'Já inscrito' : null;
+    c.anonimizadoEm
+      ? 'Anonimizado'
+      : c.status === 'bloqueado'
+        ? 'Bloqueado'
+        : idsIndisponiveis?.has(c.id)
+          ? 'Já inscrito'
+          : null;
 
   const inicio = total === 0 ? 0 : (pagina - 1) * POR_PAGINA + 1;
   const fim = Math.min(total, pagina * POR_PAGINA);

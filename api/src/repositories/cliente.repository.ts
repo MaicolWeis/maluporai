@@ -11,6 +11,8 @@ const LISTA_SELECT = {
   pais: true,
   motoMarca: true,
   motoModelo: true,
+  status: true,
+  motivoBloqueio: true,
   consentimentoMarketing: true,
   anonimizadoEm: true,
   createdAt: true,
@@ -22,12 +24,14 @@ const LISTA_SELECT = {
 interface ListarClientesParams {
   busca?: string;
   comInscricaoAtiva?: boolean;
+  status?: 'ativo' | 'inativo' | 'bloqueado';
   skip: number;
   take: number;
 }
 
-function buildWhere({ busca, comInscricaoAtiva }: Pick<ListarClientesParams, 'busca' | 'comInscricaoAtiva'>) {
+function buildWhere({ busca, comInscricaoAtiva, status }: Pick<ListarClientesParams, 'busca' | 'comInscricaoAtiva' | 'status'>) {
   const where: Prisma.ClienteWhereInput = {};
+  if (status) where.status = status;
   if (busca) {
     where.OR = [
       { nome: { contains: busca, mode: 'insensitive' } },
@@ -52,7 +56,7 @@ export function listClientes(params: ListarClientesParams) {
   });
 }
 
-export function countClientes(params: Pick<ListarClientesParams, 'busca' | 'comInscricaoAtiva'>) {
+export function countClientes(params: Pick<ListarClientesParams, 'busca' | 'comInscricaoAtiva' | 'status'>) {
   return prisma.cliente.count({ where: buildWhere(params) });
 }
 
@@ -87,6 +91,8 @@ interface CreateClienteInput {
   pais?: string;
   motoMarca?: string | null;
   motoModelo?: string | null;
+  status?: 'ativo' | 'inativo' | 'bloqueado';
+  motivoBloqueio?: string | null;
   dataNascimento?: Date | null;
   contatoEmergenciaNome?: string;
   contatoEmergenciaTelefone?: string;
@@ -112,6 +118,8 @@ interface UpdateClienteInput {
   pais?: string;
   motoMarca?: string | null;
   motoModelo?: string | null;
+  status?: 'ativo' | 'inativo' | 'bloqueado';
+  motivoBloqueio?: string | null;
   dataNascimento?: Date | null;
   contatoEmergenciaNome?: string;
   contatoEmergenciaTelefone?: string;

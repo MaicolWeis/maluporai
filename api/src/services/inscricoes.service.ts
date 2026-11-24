@@ -1,4 +1,5 @@
 import { Prisma, type InscricaoStatus } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { AppError, notFound } from '../lib/errors.js';
 import { derivarStatusPagamento, somarPagamentos } from '../lib/pagamento.js';
 import { recordAuditLog } from '../repositories/audit-log.repository.js';
@@ -139,6 +140,14 @@ export async function criarInscricao(viagemId: string, input: CriarInscricaoInpu
       'VIAGEM_FORA_DO_PERIODO_DE_INSCRICAO',
       'A viagem precisa estar em "inscrições" ou "confirmada" para receber novas inscrições',
     );
+  }
+
+  const cliente = await prisma.cliente.findUnique({
+    where: { id: input.clienteId },
+    select: { status: true, anonimizadoEm: true },
+  });
+  if (cliente?.status === 'bloqueado') {
+    throw new AppError(409, 'CLIENTE_BLOQUEADO', 'Este cliente está bloqueado e não pode ser inscrito em viagens');
   }
 
   const existente = await findInscricaoPorClienteEViagem(viagemId, input.clienteId);

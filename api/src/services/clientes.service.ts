@@ -42,6 +42,8 @@ function toListItemDTO(cliente: {
   pais: string;
   motoMarca: string | null;
   motoModelo: string | null;
+  status: 'ativo' | 'inativo' | 'bloqueado';
+  motivoBloqueio: string | null;
   consentimentoMarketing: boolean;
   anonimizadoEm: Date | null;
   inscricoes: { viagem: { id: string; nome: string } }[];
@@ -55,6 +57,8 @@ function toListItemDTO(cliente: {
     pais: cliente.pais,
     motoMarca: cliente.motoMarca,
     motoModelo: cliente.motoModelo,
+    status: cliente.status,
+    motivoBloqueio: cliente.motivoBloqueio,
     consentimentoMarketing: cliente.consentimentoMarketing,
     anonimizadoEm: cliente.anonimizadoEm,
     viagens: cliente.inscricoes.map((i) => i.viagem),
@@ -73,6 +77,8 @@ function toDetailDTO(cliente: Cliente) {
     pais: cliente.pais,
     motoMarca: cliente.motoMarca,
     motoModelo: cliente.motoModelo,
+    status: cliente.status,
+    motivoBloqueio: cliente.motivoBloqueio,
     dataNascimento: cliente.dataNascimento,
     contatoEmergenciaNome: cliente.contatoEmergenciaNome,
     contatoEmergenciaTelefone: cliente.contatoEmergenciaTelefone,
@@ -88,7 +94,7 @@ function toDetailDTO(cliente: Cliente) {
 
 export async function listarClientes(query: ListarClientesQuery) {
   const skip = (query.pagina - 1) * query.porPagina;
-  const filtro = { busca: query.busca, comInscricaoAtiva: query.comInscricaoAtiva };
+  const filtro = { busca: query.busca, comInscricaoAtiva: query.comInscricaoAtiva, status: query.status };
 
   const [clientes, total] = await Promise.all([
     listClientes({ ...filtro, skip, take: query.porPagina }),
@@ -170,6 +176,8 @@ export async function criarCliente(input: CriarClienteInput, ator: Ator, meta: R
     pais: input.pais ?? 'BR',
     motoMarca: input.motoMarca,
     motoModelo: input.motoModelo,
+    status: input.status ?? 'ativo',
+    motivoBloqueio: input.status === 'bloqueado' ? input.motivoBloqueio : null,
     dataNascimento: input.dataNascimento,
     contatoEmergenciaNome: input.contatoEmergenciaNome,
     contatoEmergenciaTelefone: input.contatoEmergenciaTelefone,
@@ -208,6 +216,10 @@ export async function atualizarCliente(
   }
   const cidade = input.cidade ?? existente.cidade;
   if (cidade) agendar([{ cidade, estado: uf, pais }]);
+
+  // Motivo do bloqueio só existe enquanto o cliente estiver bloqueado.
+  const statusFinal = input.status ?? existente.status;
+  if (statusFinal !== 'bloqueado') input = { ...input, motivoBloqueio: null };
 
   const { cpf, consentimentoMarketing, ...resto } = input;
   const data: Parameters<typeof updateCliente>[1] = { ...resto };
