@@ -64,6 +64,13 @@ function textoLugar(cidade: string, estado: string | null, pais: string) {
   return `${bandeira(pais)} ${cidade}${estado ? `, ${estado}` : ''} · ${nomePais(pais)}`;
 }
 
+/** Tooltip a partir de texto puro: dados digitados por usuários nunca viram HTML (pentest nov/2026). */
+function textoSeguro(texto: string) {
+  const el = document.createElement('span');
+  el.textContent = texto;
+  return el;
+}
+
 /** Mapa da visão geral: clientes por cidade (círculos azuis) e destinos das viagens (pinos laranja). */
 export function MapaClientesDestinos({ onAbrirViagem }: { onAbrirViagem: (viagemId: string) => void }) {
   const elemento = useRef<HTMLDivElement>(null);
@@ -134,7 +141,7 @@ export function MapaClientesDestinos({ onAbrirViagem }: { onAbrirViagem: (viagem
       if (!c.posicao) continue;
       pontos.push([c.posicao.lat, c.posicao.lng]);
       L.marker([c.posicao.lat, c.posicao.lng], { icon: iconeClientes(c.total), zIndexOffset: 0 })
-        .bindTooltip(`${textoLugar(c.cidade, c.uf, c.pais)} — ${c.total} cliente${c.total > 1 ? 's' : ''}`, {
+        .bindTooltip(textoSeguro(`${textoLugar(c.cidade, c.uf, c.pais)} — ${c.total} cliente${c.total > 1 ? 's' : ''}`), {
           direction: 'top',
         })
         .addTo(camadaClientes.current);
@@ -162,15 +169,20 @@ export function MapaClientesDestinos({ onAbrirViagem }: { onAbrirViagem: (viagem
         botao.type = 'button';
         botao.style.cssText =
           'display:block;width:100%;text-align:left;padding:4px 0;border:0;background:none;cursor:pointer;color:#0F3F80';
-        botao.innerHTML = `<strong></strong><br><span style="color:#64748B;font-size:11px"></span>`;
-        (botao.querySelector('strong') as HTMLElement).textContent = v.nome;
-        (botao.querySelector('span') as HTMLElement).textContent =
-          `${formatDataCivil(v.dataInicio)} — ${formatDataCivil(v.dataFim)} · ${STATUS_LABEL[v.status]}`;
+        const forte = document.createElement('strong');
+        forte.textContent = v.nome;
+        const detalhe = document.createElement('span');
+        detalhe.style.cssText = 'display:block;color:#64748B;font-size:11px';
+        detalhe.textContent = `${formatDataCivil(v.dataInicio)} — ${formatDataCivil(v.dataFim)} · ${STATUS_LABEL[v.status]}`;
+        botao.append(forte, detalhe);
         botao.onclick = () => abrirViagem.current(v.viagemId);
         conteudo.appendChild(botao);
       }
       L.marker([posicao.lat, posicao.lng], { icon: iconeDestino(grupo.length), zIndexOffset: 1000 })
-        .bindTooltip(grupo.length > 1 ? `${grupo.length} viagens — ${cidade}` : grupo[0].nome, { direction: 'top', offset: [0, -30] })
+        .bindTooltip(textoSeguro(grupo.length > 1 ? `${grupo.length} viagens — ${cidade}` : grupo[0].nome), {
+          direction: 'top',
+          offset: [0, -30],
+        })
         .bindPopup(conteudo, { minWidth: 200 })
         .addTo(camadaDestinos.current);
     }

@@ -186,6 +186,22 @@ describe('Isolamento entre tenants', () => {
       .set(auth(b.token));
     expect(traversal.status).toBe(404);
 
+    // Pentest nov/2026: ".." codificado passava pela checagem e o Storage
+    // normalizava o caminho para a pasta de outro tenant.
+    const alvoA = up.body.referencia.split('/').slice(1).join('/'); // <tenantA>/pagamento/<uuid>.pdf
+    for (const tentativa of [
+      `comprovantes/${b.tenantId}/%2e%2e/${alvoA}`,
+      `comprovantes/${b.tenantId}/%2E%2E/${alvoA}`,
+      `comprovantes/${b.tenantId}/..%2f${alvoA}`,
+      `comprovantes/${b.tenantId}/pagamento/..%2f..%2f${alvoA}`,
+      `comprovantes/${b.tenantId}/pagamento/%2e%2e%2f%2e%2e%2f${alvoA}`,
+      `comprovantes/${b.tenantId}//${alvoA}`,
+      `comprovantes/${b.tenantId}/pagamento/x.pdf?/../../${alvoA}`,
+    ]) {
+      const r = await request(app).get('/uploads/signed-url').query({ path: tentativa }).set(auth(b.token));
+      expect(r.status, tentativa).toBe(404);
+    }
+
     const anexar = await enviar(b.token, 'comprovante_pagamento', pagamentoId, PDF);
     expect(anexar.status).toBe(404);
 

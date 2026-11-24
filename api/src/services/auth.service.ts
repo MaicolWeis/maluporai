@@ -4,6 +4,7 @@ import type { UserRole } from '@prisma/client';
 import { AppError, unauthorized } from '../lib/errors.js';
 import { env } from '../config/env.js';
 import { signAccessToken } from '../lib/jwt.js';
+import { escaparHtml } from '../lib/html.js';
 import { logger } from '../lib/logger.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { prisma } from '../lib/prisma.js';
@@ -225,12 +226,18 @@ export async function refreshSession(rawRefreshToken: string, meta: RequestMeta)
 
     const userRow = await findUserById(row.user_id);
     const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: row.tenant_id } });
+    // Pentest nov/2026: usuário inativado seguia renovando a sessão para sempre.
+    if (userRow.status !== 'ativo' || tenant.status !== 'ativo') {
+      await revokeRefreshTokenFamily(row.family_id);
+      return null;
+    }
     return {
       accessToken: signAccessToken({ sub: userRow.id, tenantId: row.tenant_id, papel: userRow.papel }),
       user: toSessionUser(userRow, tenant),
     };
-  });
+  }).then((r) => r ?? { accessToken: null, user: null });
 
+  if (!accessToken || !user) throw unauthorized(INVALID_SESSION_MESSAGE);
   return { accessToken, refreshToken: newRawToken, user };
 }
 
@@ -269,7 +276,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
   await emailService.send({
     to: user.email,
     subject: 'Redefinição de senha — maluporai',
-    html: `<p>Olá, ${user.nome}.</p><p>Para redefinir sua senha, acesse o link abaixo (válido por 30 minutos):</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>Se você não pediu essa redefinição, ignore este e-mail.</p>`,
+    html: `<p>Olá, ${escaparHtml(user.nome)}.</p><p>Para redefinir sua senha, acesse o link abaixo (válido por 30 minutos):</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>Se você não pediu essa redefinição, ignore este e-mail.</p>`,
   });
 }
 
