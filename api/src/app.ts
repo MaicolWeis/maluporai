@@ -9,7 +9,7 @@ import { dashboardRouter, financeiroViagemRouter, mapaRouter } from './routes/fi
 import { uploadsRouter } from './routes/uploads.routes.js';
 import { auditoriaRouter } from './routes/auditoria.routes.js';
 import { origemVercel } from './middlewares/origemVercel.js';
-import { errorHandler } from './middlewares/errorHandler.js';
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 import { requestId } from './middlewares/requestId.js';
 import { logAcesso } from './middlewares/logAcesso.js';
 import { authRouter } from './routes/auth.routes.js';
@@ -64,6 +64,7 @@ export function createApp() {
   app.use('/uploads', uploadsRouter);
   app.use('/auditoria', auditoriaRouter);
 
+  app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
 }

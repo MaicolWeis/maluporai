@@ -126,9 +126,19 @@ export function montarReferencia(bucket: Bucket, tenantId: string, entidade: str
   return `${bucket}/${tenantId}/${entidade}/${nome}`;
 }
 
+/**
+ * Formato EXATO aceito (lista branca): "<bucket>/<uuid>/<entidade>/<uuid>.<ext>".
+ * Nada de "..", "%", barras extras ou outros caracteres: o Storage decodifica
+ * e normaliza o caminho, então "%2e%2e" virava ".." do lado de lá e permitia
+ * sair da pasta do tenant (achado do pentest de nov/2026).
+ */
+const REFERENCIA_VALIDA =
+  /^(comprovantes|logos)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/([a-z_]{1,30})\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.(jpg|png|webp|pdf)$/;
+
 export function interpretarReferencia(referencia: string): { bucket: Bucket; path: string; tenantId: string } | null {
-  if (referencia.includes('..') || referencia.includes('//') || referencia.startsWith('/')) return null;
-  const [bucket, tenantId, ...resto] = referencia.split('/');
-  if (!(BUCKETS as readonly string[]).includes(bucket) || !tenantId || resto.length === 0) return null;
-  return { bucket: bucket as Bucket, tenantId, path: [tenantId, ...resto].join('/') };
+  const m = REFERENCIA_VALIDA.exec(referencia);
+  if (!m) return null;
+  const [, bucket, tenantId, entidade, arquivo, ext] = m;
+  if (!(BUCKETS as readonly string[]).includes(bucket)) return null;
+  return { bucket: bucket as Bucket, tenantId, path: `${tenantId}/${entidade}/${arquivo}.${ext}` };
 }

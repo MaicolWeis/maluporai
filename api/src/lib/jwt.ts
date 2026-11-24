@@ -8,12 +8,13 @@ export interface AccessTokenPayload {
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
-  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: '15m', algorithm: 'HS256' });
 }
 
 /** Lança se o token for inválido, expirado ou malformado. */
 export function verifyAccessToken(token: string): AccessTokenPayload {
-  const decoded = jwt.verify(token, env.JWT_SECRET);
+  // Algoritmo fixo: impede troca de algoritmo no cabeçalho do token.
+  const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ['HS256'] });
   if (typeof decoded === 'string' || !decoded.sub || !decoded.tenantId || !decoded.papel) {
     throw new Error('Payload de access token inválido');
   }

@@ -1,3 +1,5 @@
+import { escaparHtml } from '../lib/html.js';
+import { revokeAllRefreshTokensForUser } from '../repositories/refresh-token.repository.js';
 import type { UserRole, UserStatus } from '@prisma/client';
 import { env } from '../config/env.js';
 import { AppError, forbidden, notFound } from '../lib/errors.js';
@@ -76,7 +78,7 @@ export async function convidarUsuario(
   await emailService.send({
     to: user.email,
     subject: 'Você foi convidado — maluporai',
-    html: `<p>Olá, ${user.nome}.</p><p>Você foi convidado para acessar o maluporai. Defina sua senha para ativar a conta (link válido por 72h):</p><p><a href="${activationUrl}">${activationUrl}</a></p>`,
+    html: `<p>Olá, ${escaparHtml(user.nome)}.</p><p>Você foi convidado para acessar o maluporai. Defina sua senha para ativar a conta (link válido por 72h):</p><p><a href="${activationUrl}">${activationUrl}</a></p>`,
   });
 
   return toPublicUser(user);
@@ -119,6 +121,8 @@ export async function atualizarUsuario(
   await garantirNaoRemoveUltimoAdmin(target, input.papel ?? target.papel, input.status ?? target.status);
 
   const updated = await updateUserRoleStatus(targetId, input);
+  // Inativou: derruba as sessões abertas (o token de acesso atual expira em até 15 min).
+  if (input.status && input.status !== 'ativo') await revokeAllRefreshTokensForUser(targetId);
   await recordAuditLog({
     acao: 'update',
     entidade: 'user',
@@ -143,6 +147,7 @@ export async function excluirUsuario(targetId: string, ator: Ator, meta: Request
     await recordAuditLog({ acao: 'delete', entidade: 'user', entidadeId: targetId, userId: ator.userId, ip: meta.ip });
   } else {
     await deactivateUser(targetId);
+    await revokeAllRefreshTokensForUser(targetId);
     await recordAuditLog({
       acao: 'update',
       entidade: 'user',
