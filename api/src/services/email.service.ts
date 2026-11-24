@@ -12,7 +12,7 @@ export interface EmailDriver {
 }
 
 /** Driver de dev/test: nunca envia de verdade, só loga (sem dado sensível). */
-class ConsoleEmailDriver implements EmailDriver {
+export class ConsoleEmailDriver implements EmailDriver {
   async send(message: EmailMessage): Promise<void> {
     logger.info({ to: message.to, subject: message.subject }, '[email:console] e-mail simulado');
     // eslint-disable-next-line no-console
@@ -20,7 +20,7 @@ class ConsoleEmailDriver implements EmailDriver {
   }
 }
 
-class ResendEmailDriver implements EmailDriver {
+export class ResendEmailDriver implements EmailDriver {
   constructor(
     private readonly apiKey: string,
     private readonly from: string,
