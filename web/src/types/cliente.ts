@@ -7,6 +7,8 @@ export interface ClienteListItem {
   pais: string;
   motoMarca: string | null;
   motoModelo: string | null;
+  status: 'ativo' | 'inativo' | 'bloqueado';
+  motivoBloqueio: string | null;
   consentimentoMarketing: boolean;
   anonimizadoEm: string | null;
   viagens: { id: string; nome: string }[];
@@ -32,6 +34,8 @@ export interface ClienteDetalhe {
   pais: string;
   motoMarca: string | null;
   motoModelo: string | null;
+  status: 'ativo' | 'inativo' | 'bloqueado';
+  motivoBloqueio: string | null;
   dataNascimento: string | null;
   contatoEmergenciaNome: string | null;
   contatoEmergenciaTelefone: string | null;

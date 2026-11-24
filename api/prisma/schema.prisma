@@ -181,6 +181,8 @@ model Cliente {
   pais                       String    @default("BR") @db.VarChar(2)
   motoMarca                  String?   @map("moto_marca") @db.VarChar(60)
   motoModelo                 String?   @map("moto_modelo") @db.VarChar(80)
+  status                     ClienteStatus @default(ativo)
+  motivoBloqueio             String?   @map("motivo_bloqueio") @db.VarChar(300)
   dataNascimento             DateTime? @map("data_nascimento") @db.Date
   contatoEmergenciaNome      String?   @map("contato_emergencia_nome")
   contatoEmergenciaTelefone  String?   @map("contato_emergencia_telefone")
@@ -414,4 +416,12 @@ model Geocache {
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("geocache")
+}
+
+enum ClienteStatus {
+  ativo
+  inativo
+  bloqueado
+
+  @@map("cliente_status")
 }

@@ -7,11 +7,13 @@ import type { ClienteDetalhe, InscricaoResumo } from '../types/cliente';
 import { Button } from './Button';
 import { CamposLocalidade } from './CamposLocalidade';
 import { CamposMoto } from './CamposMoto';
+import type { ClienteStatus } from '../lib/clienteStatus';
 import { hojeLocalISO } from '../lib/format';
 import { ContatoAcoes } from './ContatoAcoes';
 import { Drawer } from './Drawer';
 import { EmptyState } from './EmptyState';
 import { Input } from './Input';
+import { Select } from './Select';
 import { Modal } from './Modal';
 import { Pill } from './Pill';
 
@@ -119,6 +121,8 @@ function AbaDados({
     pais: cliente.pais ?? 'BR',
     dataNascimento: cliente.dataNascimento?.slice(0, 10) ?? '',
     motoMarca: cliente.motoMarca ?? '',
+    status: cliente.status ?? 'ativo',
+    motivoBloqueio: cliente.motivoBloqueio ?? '',
     motoModelo: cliente.motoModelo ?? '',
     contatoEmergenciaNome: cliente.contatoEmergenciaNome ?? '',
     contatoEmergenciaTelefone: cliente.contatoEmergenciaTelefone ?? '',
@@ -160,6 +164,8 @@ function AbaDados({
         pais: form.pais,
         dataNascimento: form.dataNascimento || null,
         motoMarca: form.motoMarca.trim() || null,
+        status: form.status,
+        motivoBloqueio: form.status === 'bloqueado' ? form.motivoBloqueio.trim() || null : null,
         motoModelo: form.motoModelo.trim() || null,
         contatoEmergenciaNome: form.contatoEmergenciaNome.trim() || undefined,
         contatoEmergenciaTelefone: form.contatoEmergenciaTelefone.trim() || undefined,
@@ -186,6 +192,26 @@ function AbaDados({
 
   return (
     <form onSubmit={salvar} className="space-y-4">
+      <div className="space-y-2">
+        <Select
+          label="Status do cliente"
+          value={form.status}
+          onChange={(e) => setForm({ ...form, status: e.target.value as ClienteStatus })}
+        >
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+          <option value="bloqueado">Bloqueado — não pode ser inscrito em viagens</option>
+        </Select>
+        {form.status === 'bloqueado' && (
+          <Input
+            label="Motivo do bloqueio (opcional)"
+            maxLength={300}
+            placeholder="Ex.: pagamento em aberto de viagem anterior"
+            value={form.motivoBloqueio}
+            onChange={(e) => setForm({ ...form, motivoBloqueio: e.target.value })}
+          />
+        )}
+      </div>
       <Input label="Nome" required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
       <div className="flex items-end gap-2">
         <div className="flex-1">
