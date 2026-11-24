@@ -1,3 +1,4 @@
+// Aniversariantes do mês: ver /dashboard/aniversariantes.
 import { prisma } from '../lib/prisma.js';
 import { hojeBrasil } from './financeiro.service.js';
 
