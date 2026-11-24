@@ -27,6 +27,11 @@ const envSchema = z
     // Coordenadas das cidades para o mapa. Padrão: nominatim (OpenStreetMap)
     // em dev/produção; memoria nos testes (sem rede, coordenadas fictícias).
     GEOCODER: z.enum(['nominatim', 'memoria', 'desligado']).optional(),
+    // Verificação diária (07:00 BRT) enviada por e-mail ao dono da plataforma.
+    // Usa o Resend (RESEND_API_KEY) mesmo com EMAIL_DRIVER=console; sem chave, só loga.
+    RELATORIO_EMAIL: z.string().email().optional(),
+    RELATORIO_FROM: z.string().optional(),
+    VERIFICACAO_AO_INICIAR: z.enum(['true', 'false']).optional(),
     RESEND_API_KEY: z.string().optional(),
     // Supabase Storage (P8.5) — opcional: sem ele, uploads ficam indisponíveis
     // em produção (503) e usam driver em memória em dev/test.
