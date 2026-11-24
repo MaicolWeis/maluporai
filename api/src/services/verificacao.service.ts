@@ -184,7 +184,8 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 export function montarEmail(r: RelatorioVerificacao) {
   const tudoOk = r.checagens.every((c) => c.ok) && r.falhasEmpresas === 0;
   const data = r.geradoEm.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' });
-  const subject = `${tudoOk ? '✅' : '⚠️'} maluporai — verificação diária ${data.split(' ')[0]}${tudoOk ? '' : ' — atenção'}`;
+  const dia = r.geradoEm.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  const subject = `${tudoOk ? '✅' : '⚠️'} maluporai — verificação diária ${dia}${tudoOk ? '' : ' — atenção'}`;
 
   const linhasChecagem = r.checagens
     .map(

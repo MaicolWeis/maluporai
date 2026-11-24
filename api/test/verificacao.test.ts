@@ -63,6 +63,7 @@ describe('Verificação diária', () => {
 
     const { subject, html } = montarEmail(relatorio);
     expect(subject).toContain('verificação diária');
+    expect(subject).toMatch(/\d{2}\/\d{2}\/\d{4}$/);
     expect(html).toContain('Empresa Verif');
     expect(html).not.toContain('Cliente Sigiloso');
     // Sem RELATORIO_EMAIL configurado nos testes, nada é enviado.
