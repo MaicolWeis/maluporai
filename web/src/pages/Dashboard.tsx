@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { formatDestino } from '../lib/paises';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ContatoAcoes } from '../components/ContatoAcoes';
+import { Aniversariantes } from '../components/Aniversariantes';
+import { ClienteDrawer } from '../components/ClienteDrawer';
 import { EmptyState } from '../components/EmptyState';
 import { MapaClientesDestinos } from '../components/MapaClientesDestinos';
 import { type Aba, ViagemDrawer } from '../components/ViagemDrawer';
@@ -24,6 +26,7 @@ function diasAte(dataIso: string, hojeIso: string) {
 export function Dashboard() {
   const [dados, setDados] = useState<DashboardData | null>(null);
   const [drawer, setDrawer] = useState<{ viagemId: string; aba: Aba } | null>(null);
+  const [clienteAberto, setClienteAberto] = useState<string | null>(null);
 
   const carregar = () => api.get('/dashboard').then(({ data }) => setDados(data));
 
@@ -58,6 +61,8 @@ export function Dashboard() {
         />
         <Kpi titulo="Próximas viagens" valor={String(dados.proximasViagens.length)} cls="text-zinc-900" />
       </div>
+
+      <Aniversariantes onAbrirCliente={setClienteAberto} />
 
       <MapaClientesDestinos onAbrirViagem={(viagemId) => setDrawer({ viagemId, aba: 'resumo' })} />
 
@@ -169,6 +174,7 @@ export function Dashboard() {
         onFechar={() => setDrawer(null)}
         onAtualizado={carregar}
       />
+      <ClienteDrawer clienteId={clienteAberto} onFechar={() => setClienteAberto(null)} onAtualizado={() => undefined} />
     </div>
   );
 }
